@@ -1,0 +1,1539 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>À faire — le mur</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231b2fc4'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%23ffe94a' transform='rotate(-5 16 16)'/%3E%3C/svg%3E">
+<style>
+  :root {
+    /* Le mur */
+    --mur: #1b2fc4;
+    --mur-fonce: #111f8c;
+    --creme: #fff6dc;
+    --encre: #17140f;
+    --alerte: #c4161c;
+
+    /* La palette des post-its */
+    --p-jaune: #ffe94a;
+    --p-orange: #ff9f45;
+    --p-rose: #ff7fae;
+    --p-vert: #93e68b;
+    --p-ciel: #96e0ff;
+    --p-lilas: #cfaeff;
+    --p-papier: #f7f1df;
+
+    --f-affiche: Haettenschweiler, Impact, "Arial Narrow Bold", "Franklin Gothic Heavy", sans-serif;
+    --f-main: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Marker Felt", cursive;
+    --f-texte: Bahnschrift, "DIN Alternate", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--creme);
+    font-family: var(--f-texte);
+    background-color: var(--mur);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  /* ---------- En-tête ---------- */
+  .tete {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 32px;
+    flex-wrap: wrap;
+    padding: clamp(20px, 4vw, 44px) clamp(16px, 4vw, 56px) 0;
+  }
+  .tete h1 {
+    margin: 0;
+    font: 400 clamp(84px, 17vw, 210px)/.82 var(--f-affiche);
+    letter-spacing: .005em;
+    text-transform: uppercase;
+  }
+  .jour {
+    text-align: right;
+    font-size: 15px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+  }
+  .jour b {
+    display: block;
+    font: 400 clamp(40px, 6vw, 68px)/.95 var(--f-affiche);
+    letter-spacing: .01em;
+  }
+
+  /* ---------- Filtres ---------- */
+  .filtres {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin-top: 18px;
+    padding: 10px clamp(16px, 4vw, 56px);
+    background: var(--mur-fonce);
+    border-block: 2px solid var(--creme);
+  }
+  .vues { display: flex; gap: 22px; }
+  .vue {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: 400 32px/1.1 var(--f-affiche);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: rgb(255 246 220 / .72);
+  }
+  .vue:hover { color: var(--creme); }
+  .vue[aria-pressed="true"] { color: var(--p-jaune); }
+  .vue .nb {
+    display: inline-block;
+    min-width: 1.35em;
+    margin-left: 6px;
+    padding: 0 5px;
+    background: var(--p-jaune);
+    color: var(--encre);
+    font-size: 22px;
+    line-height: 1.25;
+    text-align: center;
+    transform: translateY(-3px) rotate(-3deg);
+  }
+  .cats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat {
+    padding: 4px 11px;
+    border: 1.5px solid var(--creme);
+    background: none;
+    font-size: 14px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .cat:hover { background: rgb(255 246 220 / .16); }
+  .cat[aria-pressed="true"] { background: var(--creme); color: var(--mur-fonce); }
+
+  /* ---------- Le mur de post-its ---------- */
+  main { padding: clamp(24px, 4vw, 44px) clamp(16px, 4vw, 56px) 130px; }
+  .grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr));
+    gap: clamp(22px, 2.6vw, 36px);
+    align-items: start;
+  }
+
+  .postit {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 262px;
+    padding: 16px 16px 10px;
+    color: var(--encre);
+    transform: rotate(var(--r));
+    transition: transform .16s ease;
+  }
+  /* Le papier est un calque à part : l'ombre doit passer dessous (la rotation crée un contexte d'empilement) */
+  .postit::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(176deg, rgb(255 255 255 / .2), transparent 26%), var(--c);
+    box-shadow: 0 1px 1px rgb(5 10 60 / .35);
+  }
+  /* L'ombre du coin qui décolle */
+  .postit::after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    right: 7px;
+    bottom: 11px;
+    width: 62%;
+    height: 22px;
+    background: rgb(4 8 58 / .72);
+    filter: blur(9px);
+    transform: rotate(3.4deg);
+    transform-origin: right bottom;
+  }
+  .grille { isolation: isolate; }
+  .postit:hover, .postit:focus-within { transform: rotate(0) translateY(-3px); z-index: 2; }
+  .postit.pose { animation: pose .34s cubic-bezier(.2, 1.3, .4, 1); }
+  @keyframes pose {
+    from { opacity: 0; transform: rotate(calc(var(--r) * 5)) scale(1.28); }
+  }
+
+  .etiquette {
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .ligne { display: flex; align-items: flex-start; gap: 10px; }
+
+  .coche {
+    appearance: none;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    border: 2px solid var(--encre);
+    border-radius: 2px 4px 3px 5px;
+    background: rgb(255 255 255 / .22);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+  }
+  .coche::before {
+    content: "";
+    width: 12px;
+    height: 7px;
+    margin-top: -3px;
+    border-left: 3px solid var(--encre);
+    border-bottom: 3px solid var(--encre);
+    transform: rotate(-48deg) scale(0);
+    transition: transform .1s;
+  }
+  .coche:checked::before { transform: rotate(-48deg) scale(1); }
+  .coche:disabled { opacity: .35; cursor: not-allowed; }
+
+  .titre {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: 700 21px/1.24 var(--f-main);
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .titre:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  .note {
+    margin: 9px 0 0;
+    font-size: 15px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .sous { list-style: none; margin: 12px 0 0; padding: 0; }
+  .sous li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-top: 1px solid rgb(23 20 15 / .22);
+    font-size: 15px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .sous .coche { width: 17px; height: 17px; border-width: 1.5px; }
+  .sous .coche::before { width: 9px; height: 5px; border-width: 2px; margin-top: -2px; }
+  .sous label { flex: 1; min-width: 0; cursor: pointer; }
+  .sous li.fait label { text-decoration: line-through; opacity: .62; }
+  .sous .retirer {
+    padding: 0 3px;
+    border: 0;
+    background: none;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .ajout-sous {
+    width: 100%;
+    margin-top: 3px;
+    padding: 4px 0;
+    border: 0;
+    border-top: 1px dashed rgb(23 20 15 / .4);
+    background: none;
+    font-size: 14px;
+    outline-offset: 1px;
+  }
+  .ajout-sous::placeholder { color: rgb(23 20 15 / .66); }
+
+  .pied { margin-top: auto; padding-top: 12px; }
+  .infos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .echeance {
+    padding: 2px 7px;
+    background: var(--encre);
+    color: var(--c);
+    font: 400 18px/1.2 var(--f-affiche);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .echeance.retard { background: var(--alerte); color: #fff; }
+  .echeance.prochaine { background: none; color: var(--encre); box-shadow: inset 0 0 0 1.5px var(--encre); }
+  .semaine { display: flex; gap: 2px; }
+  .semaine span {
+    width: 17px;
+    height: 19px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 19px;
+    text-align: center;
+    opacity: .36;
+  }
+  .semaine span.on { background: var(--encre); color: var(--c); opacity: 1; }
+  .delai-info { font-size: 12px; letter-spacing: .03em; }
+
+  .outils {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 9px;
+    transition: opacity .12s;
+  }
+  @media (hover: hover) {
+    .outils { opacity: 0; }
+    .postit:hover .outils, .postit:focus-within .outils { opacity: 1; }
+    .sous .retirer { opacity: 0; }
+    .sous li:hover .retirer, .sous .retirer:focus-visible { opacity: 1; }
+  }
+  .pastilles { display: flex; gap: 3px; }
+  .pastille {
+    width: 17px;
+    height: 17px;
+    padding: 0;
+    border: 1.5px solid var(--encre);
+    background: var(--c);
+  }
+  .pastille[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--encre); }
+  .actions { display: flex; gap: 10px; }
+  .lien {
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  @media (pointer: coarse) {
+    .pastille { width: 26px; height: 26px; }
+    .lien { padding: 6px 0; }
+  }
+
+  /* Tâche faite : le coup de tampon */
+  .postit.fait { filter: saturate(.5) brightness(.93); }
+  .postit.fait .titre { text-decoration: line-through; text-decoration-thickness: 2px; }
+  .tampon {
+    position: absolute;
+    top: 34%;
+    right: 12px;
+    padding: 2px 11px 0;
+    border: 4px solid var(--mur);
+    border-radius: 4px;
+    color: var(--mur);
+    font: 400 48px/1 var(--f-affiche);
+    letter-spacing: .05em;
+    transform: rotate(-14deg);
+    opacity: .82;
+    pointer-events: none;
+  }
+  .tampon.frappe { animation: frappe .2s cubic-bezier(.3, 0, .2, 1); }
+  @keyframes frappe {
+    from { opacity: 0; transform: rotate(-4deg) scale(2.1); }
+  }
+
+  /* ---------- Mur vide ---------- */
+  .vide { padding: clamp(24px, 8vh, 80px) 0; max-width: 780px; }
+  .vide h2 {
+    margin: 0;
+    font: 400 clamp(62px, 11vw, 130px)/.9 var(--f-affiche);
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--creme);
+  }
+  .vide p { margin: 16px 0 0; font: 700 21px/1.35 var(--f-main); }
+
+  /* ---------- Bouton + ---------- */
+  .ajouter {
+    position: fixed;
+    z-index: 10;
+    right: clamp(16px, 3vw, 40px);
+    bottom: clamp(16px, 3vw, 36px);
+    width: 84px;
+    height: 84px;
+    padding: 0;
+    border: 0;
+    background: var(--p-jaune);
+    color: transparent; /* le + est dessiné, pour être centré quelle que soit la police */
+    background-image:
+      linear-gradient(var(--encre), var(--encre)),
+      linear-gradient(var(--encre), var(--encre));
+    background-size: 44% 11%, 11% 44%;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: rotate(-5deg);
+    box-shadow: 4px 7px 0 var(--mur-fonce);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .ajouter:hover { transform: rotate(3deg) scale(1.07); }
+  .ajouter:active { transform: rotate(0) translate(3px, 5px); box-shadow: 1px 2px 0 var(--mur-fonce); }
+
+  /* ---------- Modale : une grande feuille de la couleur choisie ---------- */
+  dialog {
+    width: min(580px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: 24px;
+    border: 0;
+    color: var(--encre);
+    background: var(--c);
+    box-shadow: 12px 14px 0 var(--mur-fonce);
+    transition: background-color .15s;
+  }
+  dialog::backdrop { background: rgb(11 20 100 / .78); }
+  .modale-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .modale-tete h2 {
+    margin: 0;
+    font: 400 40px/1 var(--f-affiche);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+  }
+  .fermer { padding: 2px 8px; border: 0; background: none; font-size: 26px; line-height: 1; }
+
+  .champ { display: block; margin-top: 18px; border: 0; padding: 0; min-width: 0; }
+  .champ > .nom, .champ > legend {
+    display: block;
+    padding: 0;
+    margin-bottom: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  dialog input[type="text"], dialog input[type="date"], dialog input[type="number"], dialog textarea {
+    width: 100%;
+    padding: 6px 0;
+    border: 0;
+    border-bottom: 2px solid var(--encre);
+    border-radius: 0;
+    background: none;
+    color-scheme: light;
+  }
+  dialog input::placeholder, dialog textarea::placeholder { color: rgb(23 20 15 / .66); }
+  #f-titre { font: 700 24px/1.3 var(--f-main); }
+  dialog textarea { min-height: 62px; resize: vertical; line-height: 1.35; }
+  .erreur { margin: 5px 0 0; color: #8f0d12; font-size: 14px; font-weight: 700; }
+  .erreur:empty { display: none; }
+
+  .choix-couleur { display: flex; flex-wrap: wrap; gap: 6px; }
+  .choix-couleur label { position: relative; cursor: pointer; }
+  .choix-couleur input, .jours input, .mode input { position: absolute; opacity: 0; width: 100%; height: 100%; inset: 0; margin: 0; cursor: pointer; }
+  .choix-couleur span {
+    display: block;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--encre);
+    background: var(--p);
+  }
+  .choix-couleur input:checked + span { box-shadow: inset 0 0 0 4px var(--c), inset 0 0 0 7px var(--encre); }
+  .choix-couleur input:focus-visible + span,
+  .jours input:focus-visible + span,
+  .mode input:focus-visible + span { outline: 3px solid var(--encre); outline-offset: 2px; }
+
+  .mode { display: flex; border: 2px solid var(--encre); width: fit-content; max-width: 100%; }
+  .mode label { position: relative; cursor: pointer; }
+  .mode span { display: block; padding: 7px 16px; font-size: 15px; font-weight: 600; }
+  .mode input:checked + span { background: var(--encre); color: var(--c); }
+
+  .raccourcis { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .puce {
+    padding: 3px 10px;
+    border: 1.5px solid var(--encre);
+    background: none;
+    font-size: 13px;
+  }
+  .puce:hover { background: rgb(23 20 15 / .12); }
+  .puce[aria-pressed="true"] { background: var(--encre); color: var(--c); }
+
+  .jours { display: flex; flex-wrap: wrap; gap: 4px; }
+  .jours label { position: relative; cursor: pointer; }
+  .jours span {
+    display: block;
+    width: 44px;
+    padding: 8px 0;
+    border: 2px solid var(--encre);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .jours input:checked + span { background: var(--encre); color: var(--c); }
+
+  .delai { display: flex; align-items: baseline; gap: 8px; }
+  dialog .delai input { width: 72px; font-size: 20px; }
+  .recap { margin: 9px 0 0; font-size: 14px; line-height: 1.35; }
+
+  .liste-sous { list-style: none; margin: 0; padding: 0; }
+  .liste-sous li { display: flex; align-items: center; gap: 6px; }
+  .liste-sous button { flex: none; padding: 0 6px; border: 0; background: none; font-size: 20px; line-height: 1; }
+
+  .modale-pied {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .espace { flex: 1; }
+  .valider {
+    padding: 9px 26px;
+    border: 0;
+    background: var(--encre);
+    color: var(--c);
+    font: 400 26px/1.1 var(--f-affiche);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .valider:hover { background: var(--mur); color: var(--creme); }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    z-index: 20;
+    left: 50%;
+    bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: calc(100vw - 32px);
+    padding: 11px 16px;
+    background: var(--encre);
+    color: var(--creme);
+    font-size: 15px;
+    transform: translateX(-50%);
+  }
+  .toast[hidden] { display: none; }
+  .toast button { padding: 0; border: 0; background: none; color: var(--p-jaune); font-weight: 700; text-decoration: underline; }
+
+  /* ---------- Compte Google Drive ---------- */
+  .compte {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-left: auto;
+    font-size: 14px;
+  }
+  .compte button {
+    padding: 4px 11px;
+    border: 1.5px solid var(--creme);
+    background: none;
+    font-size: 14px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .compte button:hover { background: rgb(255 246 220 / .16); }
+  .compte button.fort { border-color: var(--p-jaune); background: var(--p-jaune); color: var(--encre); }
+  .compte button.fort:hover { background: var(--creme); }
+  .compte button.discret { padding: 0; border: 0; text-transform: none; letter-spacing: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .compte button.discret:hover { background: none; }
+
+  /* ---------- Focus ---------- */
+  :focus-visible { outline: 3px solid var(--creme); outline-offset: 2px; }
+  .postit :focus-visible, dialog :focus-visible { outline-color: var(--encre); }
+  .ajouter:focus-visible { outline-color: var(--creme); outline-offset: 4px; }
+
+  @media (max-width: 560px) {
+    .jour { text-align: left; }
+    .postit { min-height: 200px; }
+    .ajouter { width: 70px; height: 70px; }
+    dialog { padding: 18px; box-shadow: 6px 8px 0 var(--mur-fonce); }
+    .jours span { width: 38px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="tete">
+  <h1>À faire</h1>
+  <div class="jour" id="jour"></div>
+</header>
+
+<nav class="filtres" aria-label="Filtres">
+  <div class="vues" id="vues"></div>
+  <div class="cats" id="cats"></div>
+  <div class="compte" id="compte" aria-live="polite"></div>
+</nav>
+
+<main id="mur"></main>
+
+<button class="ajouter" id="ajouter" type="button" aria-label="Nouveau post-it" title="Nouveau post-it">+</button>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<dialog id="modale" aria-labelledby="m-titre">
+  <form id="formulaire" novalidate>
+    <div class="modale-tete">
+      <h2 id="m-titre">Nouveau post-it</h2>
+      <button class="fermer" id="m-fermer" type="button" aria-label="Fermer">×</button>
+    </div>
+
+    <label class="champ">
+      <span class="nom">Titre</span>
+      <input type="text" id="f-titre" maxlength="140" autocomplete="off" placeholder="Acheter du café">
+      <p class="erreur" id="e-titre"></p>
+    </label>
+
+    <fieldset class="champ">
+      <legend>Couleur</legend>
+      <div class="choix-couleur" id="f-couleurs"></div>
+    </fieldset>
+
+    <label class="champ">
+      <span class="nom">Note</span>
+      <textarea id="f-note" placeholder="Facultatif"></textarea>
+    </label>
+
+    <fieldset class="champ">
+      <legend>Fréquence</legend>
+      <div class="mode">
+        <label><input type="radio" name="mode" value="ponctuelle" checked><span>Ponctuelle</span></label>
+        <label><input type="radio" name="mode" value="repetitive"><span>Répétitive</span></label>
+      </div>
+    </fieldset>
+
+    <div id="bloc-ponctuelle">
+      <label class="champ">
+        <span class="nom">Date limite</span>
+        <input type="date" id="f-date">
+      </label>
+      <div class="raccourcis" id="raccourcis-date"></div>
+    </div>
+
+    <div id="bloc-repetitive" hidden>
+      <fieldset class="champ">
+        <legend>Jours de la semaine</legend>
+        <div class="jours" id="f-jours"></div>
+        <p class="erreur" id="e-jours"></p>
+      </fieldset>
+      <label class="champ">
+        <span class="nom">Délai (jours)</span>
+        <span class="delai">
+          <input type="number" id="f-delai" min="1" max="365" step="1" value="1">
+          <span>1 = à faire le jour même</span>
+        </span>
+      </label>
+      <p class="recap" id="recap"></p>
+    </div>
+
+    <div class="champ">
+      <label class="nom" for="f-categorie">Catégorie</label>
+      <input type="text" id="f-categorie" maxlength="40" autocomplete="off" placeholder="Nouvelle catégorie (ex. Sport)">
+      <div class="raccourcis" id="f-cats"></div>
+    </div>
+
+    <div class="champ">
+      <label class="nom" for="f-sous">Sous-tâches</label>
+      <ul class="liste-sous" id="f-liste-sous"></ul>
+      <input type="text" id="f-sous" maxlength="140" autocomplete="off" placeholder="Ajouter, puis Entrée">
+    </div>
+
+    <div class="modale-pied">
+      <button class="lien" id="m-supprimer" type="button">Supprimer</button>
+      <span class="espace"></span>
+      <button class="lien" id="m-annuler" type="button">Annuler</button>
+      <button class="valider" id="m-valider" type="submit">Coller</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+'use strict';
+
+/* ============ Constantes ============ */
+const CLE = 'postits.v1';
+// ID client OAuth Google (type « Application Web »). Il est public par nature : il peut rester dans ce fichier.
+const GOOGLE_CLIENT_ID = '';
+const COULEURS = ['jaune', 'orange', 'rose', 'vert', 'ciel', 'lilas', 'papier'];
+const JOURS = [
+  { cle: 'lun', lettre: 'L', nom: 'lundi' },
+  { cle: 'mar', lettre: 'M', nom: 'mardi' },
+  { cle: 'mer', lettre: 'M', nom: 'mercredi' },
+  { cle: 'jeu', lettre: 'J', nom: 'jeudi' },
+  { cle: 'ven', lettre: 'V', nom: 'vendredi' },
+  { cle: 'sam', lettre: 'S', nom: 'samedi' },
+  { cle: 'dim', lettre: 'D', nom: 'dimanche' },
+];
+const INDEX_JOUR = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam']; // Date.getDay()
+const DELAI_MAX = 365;
+
+/* ============ Dates (toujours en heure locale, format AAAA-MM-JJ) ============ */
+const pad = n => String(n).padStart(2, '0');
+const versCle = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const depuisCle = c => { const [a, m, j] = c.split('-').map(Number); return new Date(a, m - 1, j); };
+const ajouterJours = (c, n) => { const d = depuisCle(c); d.setDate(d.getDate() + n); return versCle(d); };
+const aujourdhui = () => versCle(new Date());
+const jourDeSemaine = c => INDEX_JOUR[depuisCle(c).getDay()];
+const ecartJours = (de, a) => Math.round((depuisCle(a) - depuisCle(de)) / 86400000);
+const fmtCourt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+const dateCourte = c => fmtCourt.format(depuisCle(c));
+
+/* ============ État + localStorage ============ */
+// categorie : null = toutes, '' = sans catégorie. suppressions : { id: date de suppression }, pour la synchro.
+const etat = { taches: [], vue: 'tout', categorie: null, suppressions: {} };
+
+function charger() {
+  let brut = null;
+  try { brut = localStorage.getItem(CLE); } catch { return; }
+  if (!brut) return;
+  try {
+    const d = JSON.parse(brut);
+    etat.taches = Array.isArray(d.taches) ? d.taches.filter(t => t && t.id).map(normaliser) : [];
+    etat.vue = d.vue === 'aujourdhui' ? 'aujourdhui' : 'tout';
+    etat.categorie = typeof d.categorie === 'string' ? d.categorie : null;
+    etat.suppressions = d.suppressions && typeof d.suppressions === 'object' ? d.suppressions : {};
+  } catch {
+    // Données illisibles : on les met de côté plutôt que de les écraser.
+    try { localStorage.setItem(`${CLE}.illisible`, brut); } catch {}
+  }
+}
+
+function normaliser(t) {
+  return {
+    id: String(t.id),
+    titre: String(t.titre ?? ''),
+    couleur: COULEURS.includes(t.couleur) ? t.couleur : 'jaune',
+    note: String(t.note ?? ''),
+    dateLimite: t.dateLimite || null,
+    parentId: t.parentId || null,
+    categorie: t.categorie || null,
+    recurrence: t.recurrence && Array.isArray(t.recurrence.jours)
+      ? { jours: t.recurrence.jours, delai: Math.max(1, Number(t.recurrence.delai) || 1) }
+      : null,
+    createdAt: t.createdAt || new Date().toISOString(),
+    updatedAt: Number(t.updatedAt) || Date.parse(t.createdAt) || 0,
+    done: Boolean(t.done),
+    occurrencesFaites: Array.isArray(t.occurrencesFaites) ? t.occurrencesFaites : [],
+  };
+}
+
+function sauver() {
+  try {
+    localStorage.setItem(CLE, JSON.stringify(etat));
+  } catch {
+    montrerToast("Impossible d'enregistrer : le stockage du navigateur est indisponible.");
+  }
+}
+
+/* Toute modification passe par valider() : on compare à la dernière photo de l'état pour dater
+   ce qui a changé et noter ce qui a disparu. La fusion entre appareils s'appuie sur ces dates. */
+let instantane = new Map();
+const signature = ({ updatedAt, ...reste }) => JSON.stringify(reste);
+function prendreInstantane() { instantane = new Map(etat.taches.map(t => [t.id, signature(t)])); }
+
+function suivreChangements() {
+  const maintenant = Date.now();
+  const presents = new Set();
+  let change = false;
+  for (const t of etat.taches) {
+    presents.add(t.id);
+    if (instantane.get(t.id) !== signature(t)) {
+      t.updatedAt = maintenant;
+      delete etat.suppressions[t.id];
+      change = true;
+    }
+  }
+  for (const id of instantane.keys()) {
+    if (!presents.has(id)) { etat.suppressions[id] = maintenant; change = true; }
+  }
+  if (change) prendreInstantane();
+  return change;
+}
+
+function valider() {
+  const change = suivreChangements();
+  sauver();
+  rendre();
+  if (change) planifierSynchro();
+}
+
+const nouvelId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const parents = () => etat.taches.filter(t => !t.parentId);
+const sousTaches = id => etat.taches.filter(t => t.parentId === id);
+const tache = id => etat.taches.find(t => t.id === id);
+
+/* ============ Récurrence ============
+   Une occurrence démarre un jour coché et reste active pendant `delai` jours :
+   délai 1 = à faire le jour même, délai 3 = jour J, J+1, J+2 (date limite = J+2). */
+function creeLe(t) { return versCle(new Date(t.createdAt)); }
+
+function occurrence(t, debut) {
+  return { tache: t, debut, dateLimite: ajouterJours(debut, t.recurrence.delai - 1), fait: t.occurrencesFaites.includes(debut) };
+}
+
+function occurrencesActives(t, jour) {
+  const debutMin = creeLe(t);
+  const liste = [];
+  for (let i = t.recurrence.delai - 1; i >= 0; i--) {
+    const debut = ajouterJours(jour, -i);
+    if (debut >= debutMin && t.recurrence.jours.includes(jourDeSemaine(debut))) liste.push(occurrence(t, debut));
+  }
+  return liste; // de la plus ancienne à la plus récente
+}
+
+/** Calcule les occurrences actives à une date donnée depuis les règles de récurrence. */
+function genererOccurrences(jour = aujourdhui()) {
+  return parents().filter(t => t.recurrence).flatMap(t => occurrencesActives(t, jour));
+}
+
+/** L'occurrence à afficher dans la vue globale : à faire, sinon faite, sinon la prochaine. */
+function occurrenceCourante(t, jour = aujourdhui()) {
+  const actives = occurrencesActives(t, jour);
+  const aFaire = actives.find(o => !o.fait);
+  if (aFaire) return aFaire;
+  if (actives.length) return actives[actives.length - 1];
+  for (let i = 1; i <= 7; i++) {
+    const debut = ajouterJours(jour, i);
+    if (t.recurrence.jours.includes(jourDeSemaine(debut))) return { ...occurrence(t, debut), futur: true };
+  }
+  return null;
+}
+
+/* ============ Actions ============ */
+const estFait = (t, cleOcc) => cleOcc ? t.occurrencesFaites.includes(cleOcc) : t.done;
+
+function basculerFait(t, cleOcc) {
+  if (cleOcc) {
+    t.occurrencesFaites = t.occurrencesFaites.includes(cleOcc)
+      ? t.occurrencesFaites.filter(c => c !== cleOcc)
+      : [...t.occurrencesFaites, cleOcc];
+  } else {
+    t.done = !t.done;
+  }
+}
+
+function creerSousTache(parentId, titre, couleur) {
+  return normaliser({ id: nouvelId(), titre, couleur, parentId, createdAt: new Date().toISOString() });
+}
+
+function supprimer(t) {
+  const retirees = etat.taches.filter(x => x.id === t.id || x.parentId === t.id);
+  etat.taches = etat.taches.filter(x => !retirees.includes(x));
+  valider();
+  montrerToast(t.parentId ? 'Sous-tâche supprimée.' : 'Post-it décollé.', () => {
+    etat.taches.push(...retirees);
+    valider();
+  });
+}
+
+/* ============ Rendu ============ */
+let nouveauId = null;   // joue l'animation de pose
+let tamponId = null;    // joue le coup de tampon
+
+function h(balise, props = {}, ...enfants) {
+  const e = document.createElement(balise);
+  for (const [k, v] of Object.entries(props)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'dataset') Object.assign(e.dataset, v);
+    else if (k in e && !k.includes('-')) e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  e.append(...enfants.flat().filter(x => x !== null && x !== undefined && x !== false));
+  return e;
+}
+
+const rotation = id => {
+  let s = 0;
+  for (const c of id) s = (s * 31 + c.charCodeAt(0)) % 997;
+  return ((s / 996) * 4.4 - 2.2).toFixed(2);
+};
+
+function categoriesExistantes() {
+  return [...new Set(parents().map(t => t.categorie).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+function elementsDuJour(jour = aujourdhui()) {
+  return [
+    ...parents().filter(t => !t.recurrence && t.dateLimite === jour).map(t => ({ t, occ: null })),
+    ...genererOccurrences(jour).map(o => ({ t: o.tache, occ: o })),
+  ];
+}
+
+const estFini = ({ t, occ }) => occ ? (occ.fait && !occ.futur) : t.done;
+
+function elementsVisibles() {
+  const base = etat.vue === 'aujourdhui'
+    ? elementsDuJour()
+    : parents().map(t => ({ t, occ: t.recurrence ? occurrenceCourante(t) : null }));
+  const filtres = etat.categorie === null ? base : base.filter(({ t }) => (t.categorie || '') === etat.categorie);
+  const limite = ({ t, occ }) => (occ ? occ.dateLimite : t.dateLimite) || '9999-12-31';
+  return filtres.sort((a, b) =>
+    estFini(a) - estFini(b) ||
+    limite(a).localeCompare(limite(b)) ||
+    b.t.createdAt.localeCompare(a.t.createdAt));
+}
+
+function etiquetteEcheance(date, fini) {
+  const ecart = ecartJours(aujourdhui(), date);
+  if (ecart === 0) return { texte: "Aujourd'hui" };
+  if (ecart === 1) return { texte: 'Demain' };
+  if (ecart < 0 && !fini) return { texte: `En retard · ${dateCourte(date)}`, retard: true };
+  return { texte: dateCourte(date) };
+}
+
+function rendreEcheance({ t, occ }, fini) {
+  if (occ && occ.futur) return h('span', { class: 'echeance prochaine' }, `Prochaine : ${dateCourte(occ.debut)}`);
+  const date = occ ? occ.dateLimite : t.dateLimite;
+  if (!date) return null;
+  const { texte, retard } = etiquetteEcheance(date, fini);
+  return h('span', { class: 'echeance' + (retard ? ' retard' : '') }, texte);
+}
+
+function rendreSemaine(t) {
+  return [
+    h('span', { class: 'semaine', role: 'img', 'aria-label': 'Répète : ' + JOURS.filter(j => t.recurrence.jours.includes(j.cle)).map(j => j.nom).join(', ') },
+      JOURS.map(j => h('span', { class: t.recurrence.jours.includes(j.cle) ? 'on' : '' }, j.lettre))),
+    t.recurrence.delai > 1 ? h('span', { class: 'delai-info' }, `délai ${t.recurrence.delai} j`) : null,
+  ];
+}
+
+function rendrePostit(el) {
+  const { t, occ } = el;
+  const cleOcc = occ ? occ.debut : undefined;
+  const cleCarte = t.id + (cleOcc || '');
+  const futur = Boolean(occ && occ.futur);
+  const fini = estFini(el);
+  const verrou = futur ? 'Cette occurrence n’a pas encore commencé' : null;
+
+  const sous = sousTaches(t.id);
+
+  return h('article', {
+    class: 'postit' + (fini ? ' fait' : '') + (t.id === nouveauId ? ' pose' : ''),
+    style: `--c:var(--p-${t.couleur});--r:${rotation(t.id)}deg`,
+  },
+    t.categorie ? h('div', { class: 'etiquette' }, t.categorie) : null,
+    h('div', { class: 'ligne' },
+      h('input', {
+        type: 'checkbox', class: 'coche', checked: fini, disabled: futur, title: verrou,
+        'aria-label': `Marquer « ${t.titre} » comme fait`,
+        dataset: { cle: `coche-${cleCarte}` },
+        onchange: () => {
+          basculerFait(t, cleOcc);
+          tamponId = estFait(t, cleOcc) ? cleCarte : null;
+          valider();
+        },
+      }),
+      h('button', { type: 'button', class: 'titre', title: 'Modifier', onclick: () => ouvrirModale(t) }, t.titre),
+    ),
+    t.note ? h('p', { class: 'note' }, t.note) : null,
+    sous.length ? h('ul', { class: 'sous' }, sous.map(s => {
+      const idCoche = `s-${cleCarte}-${s.id}`;
+      const sf = estFait(s, cleOcc);
+      return h('li', { class: sf ? 'fait' : '' },
+        h('input', {
+          type: 'checkbox', class: 'coche', id: idCoche, checked: sf, disabled: futur, title: verrou,
+          dataset: { cle: idCoche },
+          onchange: () => { basculerFait(s, cleOcc); valider(); },
+        }),
+        h('label', { htmlFor: idCoche }, s.titre),
+        h('button', {
+          type: 'button', class: 'retirer', 'aria-label': `Supprimer la sous-tâche « ${s.titre} »`,
+          onclick: () => supprimer(s),
+        }, '×'),
+      );
+    })) : null,
+    h('input', {
+      type: 'text', class: 'ajout-sous', placeholder: '+ sous-tâche', maxLength: 140,
+      'aria-label': `Ajouter une sous-tâche à « ${t.titre} »`,
+      dataset: { cle: `ajout-${cleCarte}` },
+      onkeydown: e => {
+        const titre = e.target.value.trim();
+        if (e.key !== 'Enter' || !titre) return;
+        e.preventDefault();
+        etat.taches.push(creerSousTache(t.id, titre, t.couleur));
+        e.target.value = '';
+        valider();
+      },
+    }),
+    h('div', { class: 'pied' },
+      h('div', { class: 'infos' },
+        rendreEcheance(el, fini),
+        t.recurrence ? rendreSemaine(t) : null,
+      ),
+      h('div', { class: 'outils' },
+        h('div', { class: 'pastilles' }, COULEURS.map(c => h('button', {
+          type: 'button', class: 'pastille', style: `--c:var(--p-${c})`,
+          'aria-label': `Couleur ${c}`, 'aria-pressed': String(c === t.couleur),
+          dataset: { cle: `pastille-${cleCarte}-${c}` },
+          onclick: () => { t.couleur = c; valider(); },
+        }))),
+        h('div', { class: 'actions' },
+          h('button', { type: 'button', class: 'lien', onclick: () => ouvrirModale(t) }, 'Modifier'),
+          h('button', { type: 'button', class: 'lien', onclick: () => supprimer(t) }, 'Suppr.'),
+        ),
+      ),
+    ),
+    fini ? h('div', { class: 'tampon' + (tamponId === cleCarte ? ' frappe' : ''), 'aria-hidden': 'true' }, 'Fait') : null,
+  );
+}
+
+function rendreVide() {
+  const total = parents().length;
+  let titre, texte;
+  if (!total) { titre = 'Mur vide'; texte = 'Colle ton premier post-it avec le gros + en bas.'; }
+  else if (etat.vue === 'aujourdhui') { titre = 'Rien aujourd’hui'; texte = 'Aucune tâche à rendre ni à répéter ce jour.'; }
+  else { titre = 'Rien ici'; texte = 'Aucun post-it dans ce filtre.'; }
+  return h('div', { class: 'vide' }, h('h2', {}, titre), h('p', {}, texte));
+}
+
+function rendre() {
+  // On garde le focus et le texte en cours de saisie à travers le re-rendu.
+  const actif = document.activeElement;
+  const cleFocus = actif && actif.dataset ? actif.dataset.cle : null;
+  const saisie = cleFocus && actif.type === 'text' ? actif.value : null;
+
+  const cats = categoriesExistantes();
+  if (etat.categorie && !cats.includes(etat.categorie)) etat.categorie = null;
+  const aSansCat = parents().some(t => !t.categorie);
+  if (etat.categorie === '' && !aSansCat) etat.categorie = null;
+
+  const maintenant = new Date();
+  document.getElementById('jour').replaceChildren(
+    new Intl.DateTimeFormat('fr-FR', { weekday: 'long' }).format(maintenant),
+    h('b', {}, new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' }).format(maintenant)),
+  );
+
+  const restants = elementsDuJour().filter(e => !estFini(e)).length;
+  document.getElementById('vues').replaceChildren(
+    h('button', {
+      type: 'button', class: 'vue', 'aria-pressed': String(etat.vue === 'tout'),
+      dataset: { cle: 'vue-tout' }, onclick: () => { etat.vue = 'tout'; valider(); },
+    }, 'Tout'),
+    h('button', {
+      type: 'button', class: 'vue', 'aria-pressed': String(etat.vue === 'aujourdhui'),
+      dataset: { cle: 'vue-jour' }, onclick: () => { etat.vue = 'aujourdhui'; valider(); },
+    }, "Aujourd'hui", restants ? h('span', { class: 'nb' }, String(restants)) : null),
+  );
+
+  const puce = (texte, valeur) => h('button', {
+    type: 'button', class: 'cat', 'aria-pressed': String(etat.categorie === valeur),
+    dataset: { cle: `cat-${valeur}` },
+    onclick: () => { etat.categorie = valeur; valider(); },
+  }, texte);
+  document.getElementById('cats').replaceChildren(...(cats.length ? [
+    puce('Toutes', null),
+    ...cats.map(c => puce(c, c)),
+    aSansCat ? puce('Sans catégorie', '') : null,
+  ].filter(Boolean) : []));
+
+  const elements = elementsVisibles();
+  const mur = document.getElementById('mur');
+  mur.replaceChildren(elements.length
+    ? h('div', { class: 'grille' }, elements.map(rendrePostit))
+    : rendreVide());
+
+  nouveauId = null;
+  tamponId = null;
+
+  if (cleFocus) {
+    const cible = [...document.querySelectorAll('[data-cle]')].find(e => e.dataset.cle === cleFocus);
+    if (cible) {
+      if (saisie !== null && cible.type === 'text') cible.value = saisie;
+      cible.focus({ preventScroll: true });
+    }
+  }
+}
+
+/* ============ Toast ============ */
+const toast = document.getElementById('toast');
+let minuteurToast = null;
+
+function montrerToast(message, annuler) {
+  clearTimeout(minuteurToast);
+  toast.replaceChildren(h('span', {}, message));
+  if (annuler) toast.append(h('button', { type: 'button', onclick: () => { toast.hidden = true; annuler(); } }, 'Annuler'));
+  toast.hidden = false;
+  minuteurToast = setTimeout(() => { toast.hidden = true; }, 7000);
+}
+
+/* ============ Modale de création / édition ============ */
+const $ = id => document.getElementById(id);
+const modale = $('modale');
+let brouillon = null; // { tache, sous: [{ id, titre }] }
+
+function couleurChoisie() { return modale.querySelector('input[name="couleur"]:checked').value; }
+function modeChoisi() { return modale.querySelector('input[name="mode"]:checked').value; }
+function joursChoisis() { return [...$('f-jours').querySelectorAll('input:checked')].map(i => i.value); }
+function delaiChoisi() {
+  const n = Math.round(Number($('f-delai').value));
+  return Number.isFinite(n) ? Math.min(DELAI_MAX, Math.max(1, n)) : 1;
+}
+
+function initialiserModale() {
+  $('f-couleurs').replaceChildren(...COULEURS.map(c => h('label', { title: c },
+    h('input', { type: 'radio', name: 'couleur', value: c, 'aria-label': c, onchange: appliquerCouleur }),
+    h('span', { style: `--p:var(--p-${c})` }),
+  )));
+  $('f-jours').replaceChildren(...JOURS.map(j => h('label', { title: j.nom },
+    h('input', { type: 'checkbox', value: j.cle, 'aria-label': j.nom, onchange: () => { $('e-jours').textContent = ''; majRecap(); } }),
+    h('span', {}, j.cle),
+  )));
+  $('raccourcis-date').replaceChildren(
+    h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = aujourdhui(); } }, "Aujourd'hui"),
+    h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = ajouterJours(aujourdhui(), 1); } }, 'Demain'),
+    h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = ''; } }, 'Sans date'),
+  );
+  modale.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', appliquerMode));
+  $('f-delai').addEventListener('input', majRecap);
+  $('f-categorie').addEventListener('input', rendreCatsModale);
+  $('f-titre').addEventListener('input', () => { $('e-titre').textContent = ''; });
+  $('f-sous').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    ajouterSousBrouillon();
+    $('f-sous').focus();
+  });
+  $('m-fermer').addEventListener('click', () => modale.close());
+  $('m-annuler').addEventListener('click', () => modale.close());
+  $('m-supprimer').addEventListener('click', () => {
+    const t = brouillon.tache;
+    modale.close();
+    if (t) supprimer(t);
+  });
+  $('formulaire').addEventListener('submit', e => { e.preventDefault(); enregistrerModale(); });
+  $('ajouter').addEventListener('click', () => ouvrirModale());
+}
+
+function appliquerCouleur() { modale.style.setProperty('--c', `var(--p-${couleurChoisie()})`); }
+
+function appliquerMode() {
+  const rep = modeChoisi() === 'repetitive';
+  $('bloc-ponctuelle').hidden = rep;
+  $('bloc-repetitive').hidden = !rep;
+  majRecap();
+}
+
+function majRecap() {
+  const jours = joursChoisis();
+  if (!jours.length) { $('recap').textContent = 'Choisis au moins un jour.'; return; }
+  let debut = aujourdhui();
+  while (!jours.includes(jourDeSemaine(debut))) debut = ajouterJours(debut, 1);
+  const delai = delaiChoisi();
+  $('recap').textContent = delai === 1
+    ? `Prochaine occurrence : ${dateCourte(debut)}, à faire le jour même.`
+    : `Prochaine occurrence : ${dateCourte(debut)}, date limite ${dateCourte(ajouterJours(debut, delai - 1))}.`;
+}
+
+function rendreCatsModale() {
+  const valeur = $('f-categorie').value.trim().toLowerCase();
+  $('f-cats').replaceChildren(...categoriesExistantes().map(c => h('button', {
+    type: 'button', class: 'puce', 'aria-pressed': String(c.toLowerCase() === valeur),
+    onclick: () => {
+      $('f-categorie').value = c.toLowerCase() === valeur ? '' : c;
+      rendreCatsModale();
+    },
+  }, c)));
+}
+
+function ajouterSousBrouillon() {
+  const titre = $('f-sous').value.trim();
+  if (!titre) return;
+  brouillon.sous.push({ id: null, titre });
+  $('f-sous').value = '';
+  rendreSousModale();
+}
+
+function rendreSousModale() {
+  $('f-liste-sous').replaceChildren(...brouillon.sous.map((s, i) => h('li', {},
+    h('input', {
+      type: 'text', value: s.titre, maxLength: 140, 'aria-label': `Sous-tâche ${i + 1}`,
+      oninput: e => { s.titre = e.target.value; },
+      onkeydown: e => { if (e.key === 'Enter') e.preventDefault(); },
+    }),
+    h('button', {
+      type: 'button', 'aria-label': `Retirer la sous-tâche ${i + 1}`,
+      onclick: () => { brouillon.sous.splice(i, 1); rendreSousModale(); },
+    }, '×'),
+  )));
+}
+
+function ouvrirModale(t = null) {
+  brouillon = { tache: t, sous: t ? sousTaches(t.id).map(s => ({ id: s.id, titre: s.titre })) : [] };
+  $('m-titre').textContent = t ? 'Modifier le post-it' : 'Nouveau post-it';
+  $('m-valider').textContent = t ? 'Enregistrer' : 'Coller';
+  $('m-supprimer').hidden = !t;
+  $('f-titre').value = t ? t.titre : '';
+  $('f-note').value = t ? t.note : '';
+  $('f-date').value = t && t.dateLimite ? t.dateLimite : '';
+  $('f-delai').value = t && t.recurrence ? t.recurrence.delai : 1;
+  $('f-categorie').value = t && t.categorie ? t.categorie : (!t && etat.categorie ? etat.categorie : '');
+  $('f-sous').value = '';
+  $('e-titre').textContent = '';
+  $('e-jours').textContent = '';
+
+  const couleur = t ? t.couleur : 'jaune';
+  modale.querySelector(`input[name="couleur"][value="${couleur}"]`).checked = true;
+  appliquerCouleur();
+
+  const mode = t && t.recurrence ? 'repetitive' : 'ponctuelle';
+  modale.querySelector(`input[name="mode"][value="${mode}"]`).checked = true;
+  $('f-jours').querySelectorAll('input').forEach(i => { i.checked = Boolean(t && t.recurrence && t.recurrence.jours.includes(i.value)); });
+  appliquerMode();
+
+  rendreCatsModale();
+  rendreSousModale();
+  modale.showModal();
+  modale.scrollTop = 0;
+  $('f-titre').focus();
+}
+
+function enregistrerModale() {
+  ajouterSousBrouillon(); // une sous-tâche tapée mais pas validée n'est pas perdue
+
+  const titre = $('f-titre').value.trim();
+  const rep = modeChoisi() === 'repetitive';
+  const jours = joursChoisis();
+  let ok = true;
+  if (!titre) { $('e-titre').textContent = 'Il faut un titre.'; $('f-titre').focus(); ok = false; }
+  if (rep && !jours.length) { $('e-jours').textContent = 'Choisis au moins un jour.'; ok = false; }
+  if (!ok) return;
+
+  // Même catégorie quelle que soit la casse : « sport » rejoint « Sport ».
+  const saisieCat = $('f-categorie').value.trim();
+  const categorie = saisieCat
+    ? categoriesExistantes().find(c => c.toLowerCase() === saisieCat.toLowerCase()) || saisieCat
+    : null;
+
+  const champs = {
+    titre,
+    couleur: couleurChoisie(),
+    note: $('f-note').value.trim(),
+    categorie,
+    recurrence: rep ? { jours: JOURS.map(j => j.cle).filter(c => jours.includes(c)), delai: delaiChoisi() } : null,
+    dateLimite: rep ? null : ($('f-date').value || null),
+  };
+
+  // Une synchro a pu remplacer les objets pendant que la modale était ouverte : on repart de l'id.
+  let t = brouillon.tache ? tache(brouillon.tache.id) : null;
+  if (t) {
+    Object.assign(t, champs);
+  } else if (brouillon.tache) {
+    t = normaliser({ ...brouillon.tache, ...champs }); // supprimé ailleurs entre-temps : cette édition le ramène
+    etat.taches.push(t);
+  } else {
+    t = normaliser({ id: nouvelId(), createdAt: new Date().toISOString(), ...champs });
+    etat.taches.push(t);
+    nouveauId = t.id;
+  }
+
+  const gardes = brouillon.sous.filter(s => s.titre.trim());
+  const idsGardes = new Set(gardes.map(s => s.id).filter(Boolean));
+  etat.taches = etat.taches.filter(x => x.parentId !== t.id || idsGardes.has(x.id));
+  for (const s of gardes) {
+    const existante = s.id ? tache(s.id) : null;
+    if (existante) existante.titre = s.titre.trim();
+    else etat.taches.push(creerSousTache(t.id, s.titre.trim(), t.couleur));
+  }
+
+  modale.close();
+  valider();
+}
+
+/* ============ Fusion entre appareils ============
+   Pour chaque post-it, la version modifiée le plus récemment gagne. Une suppression gagne
+   si elle est plus récente que la dernière modification. Fusionner ne perd donc jamais
+   un post-it qui n'a pas été supprimé, et le résultat ne dépend pas de l'ordre. */
+const CONSERVATION_SUPPRESSIONS = 180 * 86400000;
+
+function plusRecente(a, b) {
+  if (a.updatedAt !== b.updatedAt) return a.updatedAt > b.updatedAt ? a : b;
+  return JSON.stringify(a) >= JSON.stringify(b) ? a : b; // égalité : même choix sur tous les appareils
+}
+
+function fusionner(a, b) {
+  const seuil = Date.now() - CONSERVATION_SUPPRESSIONS;
+  const suppressions = {};
+  for (const source of [a.suppressions, b.suppressions]) {
+    for (const [id, date] of Object.entries(source)) {
+      if (date >= seuil && !(suppressions[id] > date)) suppressions[id] = date;
+    }
+  }
+  const parId = new Map();
+  for (const t of [...a.taches, ...b.taches]) {
+    const deja = parId.get(t.id);
+    parId.set(t.id, deja ? plusRecente(deja, t) : t);
+  }
+  for (const [id, t] of parId) {
+    if (suppressions[id] === undefined) continue;
+    if (suppressions[id] >= t.updatedAt) parId.delete(id);
+    else delete suppressions[id];
+  }
+  // Une sous-tâche ajoutée ici alors que son parent a été supprimé ailleurs part avec lui.
+  const taches = [...parId.values()].filter(t => !t.parentId || parId.has(t.parentId));
+  return { taches, suppressions };
+}
+
+function formeCanonique({ taches, suppressions }) {
+  return JSON.stringify({
+    taches: [...taches].sort((x, y) => x.id.localeCompare(y.id)),
+    suppressions: Object.entries(suppressions).sort(([x], [y]) => x.localeCompare(y)),
+  });
+}
+
+/* ============ Synchro Google Drive ============
+   Un seul fichier, postits.json, dans l'espace privé de l'app sur Drive (appDataFolder) :
+   invisible dans Drive, et cette permission ne donne accès à aucun autre fichier. */
+const PORTEE = 'https://www.googleapis.com/auth/drive.appdata';
+const NOM_FICHIER = 'postits.json';
+const API_DRIVE = 'https://www.googleapis.com/drive/v3';
+const API_ENVOI = 'https://www.googleapis.com/upload/drive/v3';
+const CLE_COMPTE = 'postits.compte';
+const CLE_JETON = 'postits.jeton';
+
+const drive = {
+  jeton: null, expire: 0, clientJeton: null,
+  statut: 'deconnecte', // deconnecte | expire | synchro | ok | erreur
+  message: '', derniere: null, email: null, connecte: false,
+  enCours: false, aRefaire: false, minuteur: null,
+};
+
+const jetonValide = () => Boolean(drive.jeton) && Date.now() < drive.expire - 30000;
+
+function lireCompte() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CLE_COMPTE) || '{}');
+    drive.connecte = Boolean(c.connecte);
+    drive.email = c.email || null;
+  } catch {}
+}
+function ecrireCompte() {
+  try { localStorage.setItem(CLE_COMPTE, JSON.stringify({ connecte: drive.connecte, email: drive.email })); } catch {}
+}
+
+function poserStatut(statut, message = '') {
+  drive.statut = statut;
+  drive.message = message;
+  rendreCompte();
+}
+
+function rendreCompte() {
+  const zone = document.getElementById('compte');
+  const bouton = (texte, action, classe = '') => h('button', { type: 'button', class: classe, onclick: action }, texte);
+  const qui = drive.email ? `${drive.email} · ` : '';
+  switch (drive.statut) {
+    case 'deconnecte':
+      zone.replaceChildren(bouton('Connecter Google Drive', connecterDrive));
+      break;
+    case 'expire':
+      zone.replaceChildren(bouton('Reprendre la synchro Drive', connecterDrive, 'fort'));
+      break;
+    case 'synchro':
+      zone.replaceChildren(h('span', {}, `${qui}synchro…`));
+      break;
+    case 'ok': {
+      const heure = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(drive.derniere);
+      zone.replaceChildren(h('span', {}, `${qui}à jour (${heure})`), bouton('Déconnecter', deconnecterDrive, 'discret'));
+      break;
+    }
+    case 'erreur':
+      zone.replaceChildren(h('span', {}, drive.message), bouton('Réessayer', synchroniser, 'discret'));
+      break;
+  }
+}
+
+function preparerGoogle() {
+  if (!GOOGLE_CLIENT_ID || !location.protocol.startsWith('http')) return;
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.async = true;
+  script.onload = () => {
+    drive.clientJeton = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: PORTEE,
+      callback: recevoirJeton,
+      error_callback: () => montrerToast('Connexion à Google interrompue.'),
+    });
+  };
+  document.head.append(script);
+}
+
+function connecterDrive() {
+  if (!location.protocol.startsWith('http')) {
+    montrerToast('Google refuse les pages ouvertes en fichier : passe par http://localhost:5173 ou l’adresse en ligne.');
+    return;
+  }
+  if (!GOOGLE_CLIENT_ID) {
+    montrerToast('Il manque l’ID client Google dans index.html (GOOGLE_CLIENT_ID).');
+    return;
+  }
+  if (!drive.clientJeton) {
+    montrerToast('Google n’a pas encore répondu. Vérifie la connexion, puis réessaie.');
+    return;
+  }
+  drive.clientJeton.requestAccessToken({ prompt: drive.connecte ? '' : 'consent', hint: drive.email || undefined });
+}
+
+function recevoirJeton(reponse) {
+  if (reponse.error || !reponse.access_token) {
+    montrerToast('Connexion à Google refusée.');
+    return;
+  }
+  drive.jeton = reponse.access_token;
+  drive.expire = Date.now() + Number(reponse.expires_in) * 1000;
+  drive.connecte = true;
+  ecrireCompte();
+  try { sessionStorage.setItem(CLE_JETON, JSON.stringify({ jeton: drive.jeton, expire: drive.expire })); } catch {}
+  synchroniser();
+  if (!drive.email) chercherEmail();
+}
+
+async function chercherEmail() {
+  try {
+    const d = await (await appelDrive(`${API_DRIVE}/about?fields=user(emailAddress)`)).json();
+    drive.email = d.user?.emailAddress || null;
+    ecrireCompte();
+    rendreCompte();
+  } catch {} // purement indicatif
+}
+
+function deconnecterDrive() {
+  if (drive.jeton && window.google) google.accounts.oauth2.revoke(drive.jeton, () => {});
+  clearTimeout(drive.minuteur);
+  drive.jeton = null;
+  drive.connecte = false;
+  drive.email = null;
+  ecrireCompte();
+  try { sessionStorage.removeItem(CLE_JETON); } catch {}
+  poserStatut('deconnecte');
+  montrerToast('Déconnecté. Les post-its restent sur cet appareil et sur Drive.');
+}
+
+async function appelDrive(url, options = {}) {
+  const r = await fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${drive.jeton}` } });
+  if (!r.ok) throw Object.assign(new Error(`Drive ${r.status}`), { status: r.status });
+  return r;
+}
+
+async function lireDistant() {
+  const q = encodeURIComponent(`name='${NOM_FICHIER}'`);
+  const liste = await (await appelDrive(
+    `${API_DRIVE}/files?spaces=appDataFolder&q=${q}&fields=files(id)&orderBy=createdTime&pageSize=10`
+  )).json();
+  // Deux appareils connectés en même temps peuvent créer deux fichiers : on les fusionne.
+  let distant = { taches: [], suppressions: {} };
+  for (const f of liste.files) {
+    const d = await (await appelDrive(`${API_DRIVE}/files/${f.id}?alt=media`)).json();
+    distant = fusionner(distant, {
+      taches: (Array.isArray(d.taches) ? d.taches : []).filter(t => t && t.id).map(normaliser),
+      suppressions: d.suppressions && typeof d.suppressions === 'object' ? d.suppressions : {},
+    });
+  }
+  return { distant, idFichier: liste.files[0]?.id || null };
+}
+
+async function ecrireDistant(idFichier, contenu) {
+  const corps = JSON.stringify({ version: 1, ...contenu });
+  if (idFichier) {
+    await appelDrive(`${API_ENVOI}/files/${idFichier}?uploadType=media`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: corps,
+    });
+    return;
+  }
+  const limite = 'postits' + nouvelId();
+  const meta = JSON.stringify({ name: NOM_FICHIER, parents: ['appDataFolder'] });
+  await appelDrive(`${API_ENVOI}/files?uploadType=multipart`, {
+    method: 'POST',
+    headers: { 'Content-Type': `multipart/related; boundary=${limite}` },
+    body: `--${limite}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n` +
+          `--${limite}\r\nContent-Type: application/json\r\n\r\n${corps}\r\n--${limite}--`,
+  });
+}
+
+async function synchroniser() {
+  if (!drive.connecte) return;
+  if (!jetonValide()) { drive.jeton = null; poserStatut('expire'); return; }
+  if (drive.enCours) { drive.aRefaire = true; return; }
+  drive.enCours = true;
+  poserStatut('synchro');
+  try {
+    const { distant, idFichier } = await lireDistant();
+    // Fusion faite à partir de l'état actuel : ce qui a changé pendant la lecture est inclus.
+    const local = { taches: etat.taches, suppressions: etat.suppressions };
+    const fusion = fusionner(local, distant);
+    const canon = formeCanonique(fusion);
+    if (canon !== formeCanonique(local)) {
+      etat.taches = fusion.taches;
+      etat.suppressions = fusion.suppressions;
+      prendreInstantane();
+      sauver();
+      rendre();
+    }
+    if (!idFichier || canon !== formeCanonique(distant)) await ecrireDistant(idFichier, fusion);
+    drive.derniere = new Date();
+    poserStatut('ok');
+  } catch (e) {
+    if (e.status === 401) { drive.jeton = null; poserStatut('expire'); }
+    else if (!navigator.onLine || e instanceof TypeError) poserStatut('erreur', 'Hors ligne : modifs gardées ici.');
+    else poserStatut('erreur', 'Synchro Drive impossible.');
+  } finally {
+    drive.enCours = false;
+    if (drive.aRefaire) { drive.aRefaire = false; synchroniser(); }
+  }
+}
+
+function planifierSynchro() {
+  if (!drive.connecte) return;
+  clearTimeout(drive.minuteur);
+  drive.minuteur = setTimeout(synchroniser, 1500);
+}
+
+function demarrerDrive() {
+  lireCompte();
+  try {
+    const j = JSON.parse(sessionStorage.getItem(CLE_JETON) || 'null');
+    if (j) { drive.jeton = j.jeton; drive.expire = j.expire; }
+  } catch {}
+  preparerGoogle();
+  if (!drive.connecte) { rendreCompte(); return; }
+  if (jetonValide()) synchroniser();
+  else poserStatut('expire'); // Google exige un geste de l'utilisateur pour redemander l'accès
+}
+
+/* ============ Démarrage ============ */
+charger();
+prendreInstantane();
+initialiserModale();
+rendre();
+demarrerDrive();
+
+// Autre onglet ouvert sur la même app : on reprend ses changements.
+window.addEventListener('storage', e => {
+  if (e.key !== CLE) return;
+  charger();
+  prendreInstantane();
+  rendre();
+});
+
+// On récupère ce qui vient des autres appareils au retour sur la page, au retour du réseau, et chaque minute.
+const synchroSiVisible = () => { if (document.visibilityState === 'visible') synchroniser(); };
+document.addEventListener('visibilitychange', synchroSiVisible);
+window.addEventListener('online', synchroSiVisible);
+setInterval(synchroSiVisible, 60000);
+
+// Passage à minuit, ou retour sur un onglet resté ouvert : la vue du jour se recalcule.
+let jourAffiche = aujourdhui();
+function verifierJour() {
+  if (aujourdhui() === jourAffiche) return;
+  jourAffiche = aujourdhui();
+  rendre();
+}
+setInterval(verifierJour, 60000);
+document.addEventListener('visibilitychange', verifierJour);
+</script>
+</body>
+</html>
