@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidentialité — Post-its</title>
+<style>
+  :root { --mur: #1b2fc4; --creme: #fff6dc; --encre: #17140f; --jaune: #ffe94a; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: clamp(16px, 5vw, 56px);
+    background: var(--mur);
+    color: var(--encre);
+    font: 16px/1.5 Bahnschrift, "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: clamp(20px, 5vw, 44px); background: var(--creme); }
+  h1 {
+    margin: 0 0 6px;
+    font: 400 clamp(44px, 9vw, 72px)/1 Haettenschweiler, Impact, "Arial Narrow Bold", sans-serif;
+    text-transform: uppercase;
+  }
+  h2 { margin: 28px 0 6px; font-size: 18px; }
+  p, ul { margin: 0 0 10px; }
+  ul { padding-left: 20px; }
+  a { color: var(--mur); text-underline-offset: 2px; }
+  .date { font-size: 14px; }
+  .retour { display: inline-block; margin-top: 18px; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Confidentialité</h1>
+  <p class="date">Dernière mise à jour : 5 novembre 2026</p>
+
+  <p>Post-its est une application gratuite de tâches qui fonctionne dans ton navigateur. Elle n'a ni serveur ni base de données : personne d'autre que toi n'a accès à tes post-its, pas même l'auteur de l'application.</p>
+
+  <h2>Sans connexion Google</h2>
+  <p>Tes post-its sont enregistrés uniquement dans ton navigateur, sur ton appareil (localStorage).</p>
+
+  <h2>Avec la connexion Google Drive</h2>
+  <p>Si tu choisis de connecter ton compte, l'application demande une seule permission Google : <code>drive.appdata</code>. Elle sert à :</p>
+  <ul>
+    <li>créer, lire et modifier un fichier, <code>postits.json</code>, dans le dossier privé réservé à l'application sur ton Google Drive. Ce fichier contient tes post-its ;</li>
+    <li>afficher l'adresse e-mail du compte connecté, sur ton écran seulement, pour que tu saches quel compte est utilisé.</li>
+  </ul>
+  <p>L'application n'a accès à aucun autre fichier de ton Drive. Les échanges se font directement entre ton navigateur et Google. L'autorisation temporaire donnée par Google reste dans ton navigateur et n'est envoyée nulle part ailleurs.</p>
+
+  <h2>Partage et utilisation des données</h2>
+  <p>Tes données ne sont ni vendues, ni partagées, ni utilisées pour de la publicité ou pour entraîner des modèles d'IA. L'utilisation des informations reçues des API Google respecte le <a href="https://developers.google.com/terms/api-services-user-data-policy">règlement sur les données utilisateur des services d'API Google</a>, y compris ses exigences d'utilisation limitée.</p>
+
+  <h2>Services tiers</h2>
+  <ul>
+    <li><strong>Google</strong> fournit la connexion et le stockage sur Drive, selon ses <a href="https://policies.google.com/privacy">règles de confidentialité</a>. Son script de connexion est chargé à l'ouverture de l'application.</li>
+    <li><strong>GitHub Pages</strong> héberge l'application et peut enregistrer des données techniques de visite, comme l'adresse IP, selon sa <a href="https://docs.github.com/fr/site-policy/privacy-policies/github-general-privacy-statement">déclaration de confidentialité</a>.</li>
+  </ul>
+
+  <h2>Supprimer tes données</h2>
+  <ul>
+    <li><strong>Sur un appareil :</strong> efface les données de ce site dans les réglages de ton navigateur.</li>
+    <li><strong>Sur Drive :</strong> dans Google Drive, ouvre Paramètres, puis Gérer les applications, choisis Post-its et supprime ses données cachées.</li>
+    <li><strong>Retirer l'accès :</strong> sur <a href="https://myaccount.google.com/permissions">la page des autorisations de ton compte Google</a>, ou avec « Déconnecter » dans l'application.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Pour toute question, ouvre un ticket sur <a href="https://github.com/snnagy/postits/issues">la page GitHub du projet</a>.</p>
+
+  <a class="retour" href="./">← Retour aux post-its</a>
+</main>
+</body>
+</html>

@@ -123,7 +123,15 @@
   .cat[aria-pressed="true"] { background: var(--creme); color: var(--mur-fonce); }
 
   /* ---------- Le mur de post-its ---------- */
-  main { padding: clamp(24px, 4vw, 44px) clamp(16px, 4vw, 56px) 130px; }
+  main { padding: clamp(24px, 4vw, 44px) clamp(16px, 4vw, 56px) 60px; }
+  .bas {
+    max-width: 760px;
+    padding: 0 clamp(16px, 4vw, 56px) 120px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .bas p { margin: 0 0 6px; }
+  .bas a { color: inherit; text-underline-offset: 2px; }
   .grille {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr));
@@ -569,6 +577,11 @@
 
 <main id="mur"></main>
 
+<footer class="bas">
+  <p>Post-its est un mur de tâches gratuit : couleurs, sous-tâches, dates limites et tâches répétitives. Connecte Google Drive pour retrouver tes post-its sur tous tes appareils.</p>
+  <p><a href="confidentialite.html">Règles de confidentialité</a></p>
+</footer>
+
 <button class="ajouter" id="ajouter" type="button" aria-label="Nouveau post-it" title="Nouveau post-it">+</button>
 
 <div class="toast" id="toast" role="status" hidden></div>
@@ -655,7 +668,7 @@
 /* ============ Constantes ============ */
 const CLE = 'postits.v1';
 // ID client OAuth Google (type « Application Web »). Il est public par nature : il peut rester dans ce fichier.
-const GOOGLE_CLIENT_ID = '';
+const GOOGLE_CLIENT_ID = '639300977589-l9jlnoamf9ti84su23psu2aqbisff012.apps.googleusercontent.com';
 const COULEURS = ['jaune', 'orange', 'rose', 'vert', 'ciel', 'lilas', 'papier'];
 const JOURS = [
   { cle: 'lun', lettre: 'L', nom: 'lundi' },
