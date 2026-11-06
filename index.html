@@ -29,6 +29,7 @@
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
 
   body {
@@ -40,7 +41,7 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  button, input, textarea { font: inherit; color: inherit; }
+  button, input, textarea, select { font: inherit; color: inherit; }
   button { cursor: pointer; }
 
   /* ---------- En-tête ---------- */
@@ -545,17 +546,227 @@
   .compte button.discret { padding: 0; border: 0; text-transform: none; letter-spacing: 0; text-decoration: underline; text-underline-offset: 2px; }
   .compte button.discret:hover { background: none; }
 
+  /* ---------- Murs ---------- */
+  .murs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-basis: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 2px;
+  }
+  .murs[hidden] { display: none; }
+  .mur-onglet {
+    flex: none;
+    max-width: 240px;
+    padding: 3px 12px;
+    border: 0;
+    background: rgb(255 246 220 / .14);
+    color: var(--creme);
+    font: 700 16px/1.3 var(--f-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mur-onglet:hover { background: rgb(255 246 220 / .26); }
+  .mur-onglet[aria-pressed="true"] { background: var(--p-jaune); color: var(--encre); }
+  .mur-action {
+    flex: none;
+    padding: 3px 8px;
+    border: 0;
+    background: none;
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .vider {
+    margin-left: 4px;
+    padding: 4px 11px;
+    border: 1.5px dashed var(--creme);
+    background: none;
+    font-size: 14px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .vider:hover { background: rgb(255 246 220 / .16); }
+
+  /* ---------- Calendrier ---------- */
+  .cal { --hh: 44px; color: var(--encre); background: var(--creme); box-shadow: 8px 10px 0 var(--mur-fonce); }
+  .cal-barre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 12px 14px;
+    border-bottom: 3px solid var(--encre);
+  }
+  .cal-titre { margin: 0 auto 0 4px; font: 400 32px/1 var(--f-affiche); letter-spacing: .02em; text-transform: uppercase; }
+  .cal-groupe { display: flex; gap: 4px; align-items: center; }
+  .cal-btn {
+    min-height: 34px;
+    padding: 4px 11px;
+    border: 2px solid var(--encre);
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cal-btn:hover { background: rgb(23 20 15 / .1); }
+  .cal-btn[aria-pressed="true"] { background: var(--encre); color: var(--creme); }
+  .cal-btn.fort { background: var(--mur); border-color: var(--mur); color: var(--creme); }
+  .cal-select { min-height: 34px; padding: 4px 8px; border: 2px solid var(--encre); background: none; font-size: 14px; font-weight: 600; max-width: 220px; }
+  .cal-note { margin: 0; padding: 8px 14px; font-size: 14px; border-bottom: 1px solid rgb(23 20 15 / .25); }
+  .cal-legende { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 14px; font-size: 13px; }
+  .cal-legende span { display: inline-flex; align-items: center; gap: 6px; }
+  .cal-legende i { width: 14px; height: 14px; display: inline-block; }
+  .cal-legende i.l-rdv { background: var(--mur); border-radius: 50%; }
+  .cal-legende i.l-tache { background: var(--p-jaune); border: 1.5px solid var(--encre); }
+
+  .cal-tete, .cal-jsj, .cal-lignes { display: grid; grid-template-columns: 52px repeat(var(--n), minmax(0, 1fr)); }
+  .cal-tete { border-bottom: 1px solid var(--encre); }
+  .cal-tete div { padding: 6px 4px; text-align: center; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; border-left: 1px solid rgb(23 20 15 / .18); }
+  .cal-tete div:first-child { border-left: 0; }
+  .cal-tete b { display: block; font: 400 28px/1 var(--f-affiche); }
+  .cal-tete .ajd b { width: fit-content; min-width: 36px; margin-inline: auto; padding: 1px 4px; background: var(--alerte); color: #fff; }
+  .cal-jsj { border-bottom: 2px solid var(--encre); }
+  .cal-jsj > div { min-height: 30px; padding: 3px; border-left: 1px solid rgb(23 20 15 / .18); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .cal-jsj > div:first-child { border-left: 0; font-size: 10px; line-height: 1.1; padding-top: 6px; text-align: center; }
+  .cal-corps { height: min(68vh, 760px); overflow-y: auto; }
+  .cal-heures div { height: var(--hh); padding-right: 6px; text-align: right; font-size: 12px; transform: translateY(-8px); }
+  .cal-heures div:first-child { visibility: hidden; }
+  .cal-col {
+    position: relative;
+    height: calc(var(--hh) * 24);
+    border-left: 1px solid rgb(23 20 15 / .18);
+    background-image: linear-gradient(rgb(23 20 15 / .16) 1px, transparent 1px);
+    background-size: 100% var(--hh);
+  }
+  .cal-col.cliquable { cursor: cell; }
+  .cal-maintenant { position: absolute; left: 0; right: 0; z-index: 2; height: 2px; background: var(--alerte); pointer-events: none; }
+
+  .cal-e {
+    display: flex;
+    gap: 5px;
+    min-width: 0;
+    padding: 2px 5px;
+    font-size: 13px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-align: left;
+  }
+  .cal-col .cal-e { position: absolute; }
+  .cal-e.cliquable { cursor: pointer; }
+  .cal-e.cliquable:hover { outline: 2px solid var(--encre); z-index: 3; }
+  .cal-e.rdv { background: var(--mur); color: var(--creme); border-radius: 7px; }
+  .cal-e.tache { background: var(--c); color: var(--encre); border: 1.5px solid var(--encre); }
+  .cal-e.fait .cal-e-titre { text-decoration: line-through; }
+  .cal-e.fait { opacity: .62; }
+  .cal-e-texte { min-width: 0; overflow: hidden; }
+  .cal-e-titre { font-weight: 700; overflow-wrap: anywhere; }
+  .cal-e-mur { font-size: 11px; font-weight: 600; letter-spacing: .03em; }
+  .cal-coche { flex: none; width: 14px; height: 14px; margin: 1px 0 0; accent-color: var(--encre); cursor: pointer; }
+
+  /* Vue liste (petit écran) */
+  .cal-bande { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 2px solid var(--encre); }
+  .cal-bande button { min-height: 56px; padding: 4px 0; border: 0; background: none; font-size: 12px; text-transform: uppercase; }
+  .cal-bande b { display: block; font: 400 24px/1 var(--f-affiche); }
+  .cal-bande button[aria-pressed="true"] { background: var(--encre); color: var(--creme); }
+  .cal-liste { list-style: none; margin: 0; padding: 8px 12px 14px; }
+  .cal-liste li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; align-items: stretch; margin-top: 8px; }
+  .cal-liste .quand { padding-top: 8px; font: 400 21px/1.1 var(--f-affiche); }
+  .cal-liste .cal-e { min-height: 48px; padding: 8px 10px; font-size: 15px; align-items: flex-start; }
+  .cal-liste .cal-coche { width: 28px; height: 28px; }
+  .cal-liste-vide { padding: 28px 14px 36px; font: 700 19px/1.35 var(--f-main); }
+
+  /* ---------- Fenêtres simples ---------- */
+  #feuille, #modale-rdv { --c: var(--p-papier); }
+  dialog select {
+    width: 100%;
+    padding: 6px 0;
+    border: 0;
+    border-bottom: 2px solid var(--encre);
+    border-radius: 0;
+    background: none;
+    color-scheme: light;
+    font: inherit;
+  }
+  dialog input[type="time"], dialog input[type="email"] {
+    width: 100%;
+    padding: 6px 0;
+    border: 0;
+    border-bottom: 2px solid var(--encre);
+    border-radius: 0;
+    background: none;
+    color-scheme: light;
+  }
+  .feuille-texte { margin: 12px 0 0; font-size: 15px; line-height: 1.4; }
+  .feuille-section { margin-top: 22px; padding-top: 14px; border-top: 2px solid var(--encre); }
+  .feuille-section h3 { margin: 0; font: 400 26px/1.1 var(--f-affiche); letter-spacing: .03em; text-transform: uppercase; }
+  .ligne-lien { display: flex; gap: 8px; align-items: flex-end; margin-top: 8px; }
+  .ligne-lien input { min-width: 0; flex: 1; }
+  .cocher { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 15px; }
+  .cocher input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--encre); }
+  .attention { margin: 10px 0 0; padding: 8px 10px; border-left: 4px solid var(--alerte); font-size: 14px; line-height: 1.35; }
+  .demande { margin-top: 12px; padding: 10px 12px; border: 2px solid var(--encre); }
+  .demande b { display: block; font-size: 16px; }
+  .demande p { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+  .demande .modale-pied { margin-top: 8px; }
+  .inline { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+  dialog .inline input[type="number"] { width: 72px; }
+  dialog .inline select { width: auto; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0 16px; }
+  .btn-encre {
+    padding: 7px 14px;
+    border: 0;
+    background: var(--encre);
+    color: var(--c);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .btn-encre:hover { background: var(--mur); color: var(--creme); }
+
   /* ---------- Focus ---------- */
   :focus-visible { outline: 3px solid var(--creme); outline-offset: 2px; }
-  .postit :focus-visible, dialog :focus-visible { outline-color: var(--encre); }
+  .postit :focus-visible, dialog :focus-visible, .cal :focus-visible { outline-color: var(--encre); }
   .ajouter:focus-visible { outline-color: var(--creme); outline-offset: 4px; }
 
-  @media (max-width: 560px) {
-    .jour { text-align: left; }
-    .postit { min-height: 200px; }
-    .ajouter { width: 70px; height: 70px; }
+  /* ---------- Mobile ---------- */
+  @media (max-width: 720px) {
+    .tete h1 { font-size: clamp(64px, 22vw, 110px); }
+    .jour { text-align: left; font-size: 13px; }
+    .filtres { gap: 8px 14px; padding-block: 8px; }
+    .vues { gap: 16px; flex-basis: 100%; }
+    .vue { min-height: 44px; font-size: 28px; }
+    .cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex-basis: 100%; padding-block: 2px; }
+    .cat, .vider { flex: none; min-height: 40px; }
+    .compte { margin-left: 0; }
+    .compte button { min-height: 40px; }
+    .grille { grid-template-columns: minmax(0, 1fr); }
+    .postit, .postit:hover, .postit:focus-within { min-height: 200px; transform: none; }
+    .postit.pose { animation: none; }
+    .mur-onglet, .mur-action { min-height: 40px; }
+    .ajouter { width: 70px; height: 70px; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }
+    .cal { box-shadow: 4px 5px 0 var(--mur-fonce); }
+    .cal-barre { padding: 10px; }
+    .cal-titre { flex-basis: 100%; margin: 0; font-size: 28px; }
+    .cal-btn, .cal-select { min-height: 44px; }
+    /* 16 px : sous cette taille, iOS zoome sur le champ à chaque saisie */
+    input, textarea, select { font-size: 16px; }
+    .ajout-sous { min-height: 40px; font-size: 16px; }
     dialog { padding: 18px; box-shadow: 6px 8px 0 var(--mur-fonce); }
-    .jours span { width: 38px; }
+    dialog .modale-pied button { min-height: 44px; }
+    .fermer { min-width: 44px; min-height: 44px; }
+    .jours span { width: 40px; padding: 11px 0; }
+    .mode span { padding: 11px 14px; }
+    .puce { min-height: 40px; padding-inline: 12px; }
+    .choix-couleur span { width: 42px; height: 42px; }
+    .btn-encre { min-height: 44px; }
+  }
+  @media (pointer: coarse) {
+    .coche { width: 28px; height: 28px; }
+    .sous .coche { width: 24px; height: 24px; }
+    .sous .retirer { min-width: 40px; min-height: 40px; font-size: 22px; }
+    .liste-sous button { min-width: 44px; min-height: 44px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -570,6 +781,7 @@
 </header>
 
 <nav class="filtres" aria-label="Filtres">
+  <div class="murs" id="murs" aria-label="Murs"></div>
   <div class="vues" id="vues"></div>
   <div class="cats" id="cats"></div>
   <div class="compte" id="compte" aria-live="polite"></div>
@@ -578,7 +790,7 @@
 <main id="mur"></main>
 
 <footer class="bas">
-  <p>Post-its est un mur de tâches gratuit : couleurs, sous-tâches, dates limites et tâches répétitives. Connecte Google Drive pour retrouver tes post-its sur tous tes appareils.</p>
+  <p>Post-its est un mur de tâches gratuit : couleurs, sous-tâches, dates limites, tâches répétitives, plusieurs murs et un agenda. Connecte Google Drive pour retrouver tes post-its sur tous tes appareils et partager un mur ou ton agenda.</p>
   <p><a href="confidentialite.html">Règles de confidentialité</a></p>
 </footer>
 
@@ -625,6 +837,12 @@
       <div class="raccourcis" id="raccourcis-date"></div>
     </div>
 
+    <label class="champ">
+      <span class="nom">Heure</span>
+      <input type="time" id="f-heure">
+      <p class="erreur" id="e-heure"></p>
+    </label>
+
     <div id="bloc-repetitive" hidden>
       <fieldset class="champ">
         <legend>Jours de la semaine</legend>
@@ -640,6 +858,11 @@
       </label>
       <p class="recap" id="recap"></p>
     </div>
+
+    <label class="champ" id="bloc-mur">
+      <span class="nom">Mur</span>
+      <select id="f-mur"></select>
+    </label>
 
     <div class="champ">
       <label class="nom" for="f-categorie">Catégorie</label>
@@ -662,13 +885,97 @@
   </form>
 </dialog>
 
+<dialog id="modale-rdv" aria-labelledby="r-entete">
+  <form id="r-form" novalidate>
+    <div class="modale-tete">
+      <h2 id="r-entete">Nouveau RDV</h2>
+      <button class="fermer" id="r-fermer" type="button" aria-label="Fermer">×</button>
+    </div>
+    <label class="champ">
+      <span class="nom">Titre</span>
+      <input type="text" id="r-titre" maxlength="140" autocomplete="off" placeholder="Dentiste">
+      <p class="erreur" id="e-r-titre"></p>
+    </label>
+    <div class="duo">
+      <label class="champ"><span class="nom">Date</span><input type="date" id="r-date"></label>
+      <label class="champ"><span class="nom">Heure</span><input type="time" id="r-heure"></label>
+      <label class="champ"><span class="nom">Durée</span><select id="r-duree"></select></label>
+    </div>
+    <p class="erreur" id="e-r-date"></p>
+    <label class="champ">
+      <span class="nom" id="r-note-nom">Note</span>
+      <textarea id="r-note" placeholder="Facultatif"></textarea>
+    </label>
+    <div id="r-bloc-rec">
+      <fieldset class="champ">
+        <legend>Récurrence</legend>
+        <div class="mode">
+          <label><input type="radio" name="rmode" value="aucune" checked><span>Aucune</span></label>
+          <label><input type="radio" name="rmode" value="jours"><span>Jours</span></label>
+          <label><input type="radio" name="rmode" value="intervalle"><span>Intervalle</span></label>
+        </div>
+      </fieldset>
+      <div id="r-bloc-jours" hidden>
+        <fieldset class="champ">
+          <legend>Jours de la semaine</legend>
+          <div class="jours" id="r-jours"></div>
+          <p class="erreur" id="e-r-jours"></p>
+        </fieldset>
+        <label class="champ">
+          <span class="nom">Fréquence</span>
+          <span class="inline">Toutes les <input type="number" id="r-semaines" min="1" max="52" value="1"> semaine(s)</span>
+        </label>
+      </div>
+      <div id="r-bloc-intervalle" hidden>
+        <div class="champ">
+          <span class="nom">Fréquence</span>
+          <span class="inline">Tous les
+            <input type="number" id="r-tous" min="1" max="365" value="1" aria-label="Nombre">
+            <select id="r-unite" aria-label="Unité">
+              <option value="jour">jour(s)</option>
+              <option value="semaine">semaine(s)</option>
+              <option value="mois">mois</option>
+            </select>
+          </span>
+        </div>
+      </div>
+      <label class="champ" id="r-bloc-fin" hidden>
+        <span class="nom">Jusqu'au (facultatif)</span>
+        <input type="date" id="r-jusquau">
+      </label>
+    </div>
+    <div class="modale-pied">
+      <button class="lien" id="r-suppr-occ" type="button">Supprimer ce jour-là</button>
+      <button class="lien" id="r-suppr" type="button">Supprimer</button>
+      <span class="espace"></span>
+      <button class="lien" id="r-annuler" type="button">Annuler</button>
+      <button class="valider" id="r-valider" type="submit">Ajouter</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="feuille" aria-labelledby="fe-titre">
+  <div class="modale-tete">
+    <h2 id="fe-titre"></h2>
+    <button class="fermer" id="fe-fermer" type="button" aria-label="Fermer">×</button>
+  </div>
+  <div id="fe-corps"></div>
+</dialog>
+
 <script>
 'use strict';
 
 /* ============ Constantes ============ */
-const CLE = 'postits.v1';
+const CLE = 'postits.v2';
+const CLE_V1 = 'postits.v1'; // ancien format : relu une fois, jamais modifié
 // ID client OAuth Google (type « Application Web »). Il est public par nature : il peut rester dans ce fichier.
 const GOOGLE_CLIENT_ID = '639300977589-l9jlnoamf9ti84su23psu2aqbisff012.apps.googleusercontent.com';
+// Pour le sélecteur de fichiers Google (Picker), indispensable pour ouvrir un fichier partagé par quelqu'un d'autre.
+// La clé est publique par nature et doit être limitée au site et à l'API Picker dans la console Google.
+const GOOGLE_API_KEY = 'AIzaSyBNVqys2gYdoW7AmzKuvBWF-RyGV95GLyk';
+const GOOGLE_APP_ID = '639300977589';
+const MUR_DEFAUT = 'mur-principal'; // même id sur tous les appareils, pour ne pas créer un mur par appareil
+const COLLECTIONS = ['taches', 'murs', 'rdv', 'agendasRecus', 'partageAgenda'];
 const COULEURS = ['jaune', 'orange', 'rose', 'vert', 'ciel', 'lilas', 'papier'];
 const JOURS = [
   { cle: 'lun', lettre: 'L', nom: 'lundi' },
@@ -692,26 +999,52 @@ const jourDeSemaine = c => INDEX_JOUR[depuisCle(c).getDay()];
 const ecartJours = (de, a) => Math.round((depuisCle(a) - depuisCle(de)) / 86400000);
 const fmtCourt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 const dateCourte = c => fmtCourt.format(depuisCle(c));
+const dateValide = c => typeof c === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c) && versCle(depuisCle(c)) === c;
+const heureValide = h => typeof h === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(h);
+const enMinutes = h => Number(h.slice(0, 2)) * 60 + Number(h.slice(3));
+const lundiDe = c => ajouterJours(c, -((depuisCle(c).getDay() + 6) % 7));
+const entier = (v, min, max, defaut) => {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : defaut;
+};
 
 /* ============ État + localStorage ============ */
 // categorie : null = toutes, '' = sans catégorie. suppressions : { id: date de suppression }, pour la synchro.
-const etat = { taches: [], vue: 'tout', categorie: null, suppressions: {} };
+// suppMurs : { murId: { id: date } }, les suppressions des murs partagés, qui voyagent dans le fichier du mur.
+const etat = {
+  taches: [], murs: [], rdv: [], agendasRecus: [], partageAgenda: [],
+  suppressions: {}, suppMurs: {},
+  murActif: MUR_DEFAUT, vue: 'tout', categorie: null,
+};
+const objetOuVide = o => (o && typeof o === 'object' && !Array.isArray(o) ? o : {});
 
 function charger() {
   let brut = null;
-  try { brut = localStorage.getItem(CLE); } catch { return; }
-  if (!brut) return;
-  try {
-    const d = JSON.parse(brut);
-    etat.taches = Array.isArray(d.taches) ? d.taches.filter(t => t && t.id).map(normaliser) : [];
-    etat.vue = d.vue === 'aujourdhui' ? 'aujourdhui' : 'tout';
-    etat.categorie = typeof d.categorie === 'string' ? d.categorie : null;
-    etat.suppressions = d.suppressions && typeof d.suppressions === 'object' ? d.suppressions : {};
-  } catch {
-    // Données illisibles : on les met de côté plutôt que de les écraser.
-    try { localStorage.setItem(`${CLE}.illisible`, brut); } catch {}
+  try { brut = localStorage.getItem(CLE) ?? localStorage.getItem(CLE_V1); } catch { garantirMur(); return; }
+  if (brut) {
+    try {
+      const d = JSON.parse(brut);
+      Object.assign(etat, lireDoc(d));
+      etat.suppMurs = objetOuVide(d.suppMurs);
+      etat.murActif = typeof d.murActif === 'string' ? d.murActif : MUR_DEFAUT;
+      etat.vue = ['aujourdhui', 'calendrier'].includes(d.vue) ? d.vue : 'tout';
+      etat.categorie = typeof d.categorie === 'string' ? d.categorie : null;
+    } catch {
+      // Données illisibles : on les met de côté plutôt que de les écraser.
+      try { localStorage.setItem(`${CLE}.illisible`, brut); } catch {}
+    }
   }
+  garantirMur();
 }
+
+const murParDefaut = () => normaliserMur({ id: MUR_DEFAUT, nom: 'Mon mur', updatedAt: 0, createdAt: '2020-01-01T00:00:00.000Z' });
+function garantirMur() {
+  if (!etat.murs.length) etat.murs.push(murParDefaut());
+  if (!etat.murs.some(m => m.id === etat.murActif)) etat.murActif = etat.murs[0].id;
+}
+
+// Les fichiers partagés peuvent être modifiés par d'autres : tout ce qui est lu est remis au format attendu.
+const dateCreation = v => (typeof v === 'string' && !Number.isNaN(Date.parse(v)) ? v : '2020-01-01T00:00:00.000Z');
 
 function normaliser(t) {
   return {
@@ -719,17 +1052,89 @@ function normaliser(t) {
     titre: String(t.titre ?? ''),
     couleur: COULEURS.includes(t.couleur) ? t.couleur : 'jaune',
     note: String(t.note ?? ''),
-    dateLimite: t.dateLimite || null,
-    parentId: t.parentId || null,
-    categorie: t.categorie || null,
+    dateLimite: dateValide(t.dateLimite) ? t.dateLimite : null,
+    heure: heureValide(t.heure) ? t.heure : null,
+    murId: t.murId ? String(t.murId) : MUR_DEFAUT,
+    parentId: t.parentId ? String(t.parentId) : null,
+    categorie: t.categorie ? String(t.categorie) : null,
     recurrence: t.recurrence && Array.isArray(t.recurrence.jours)
-      ? { jours: t.recurrence.jours, delai: Math.max(1, Number(t.recurrence.delai) || 1) }
+      ? { jours: t.recurrence.jours.filter(j => INDEX_JOUR.includes(j)), delai: entier(t.recurrence.delai, 1, DELAI_MAX, 1) }
       : null,
-    createdAt: t.createdAt || new Date().toISOString(),
+    createdAt: dateCreation(t.createdAt),
     updatedAt: Number(t.updatedAt) || Date.parse(t.createdAt) || 0,
     done: Boolean(t.done),
-    occurrencesFaites: Array.isArray(t.occurrencesFaites) ? t.occurrencesFaites : [],
+    occurrencesFaites: Array.isArray(t.occurrencesFaites) ? t.occurrencesFaites.filter(dateValide) : [],
   };
+}
+
+function normaliserMur(m) {
+  const p = m.partage;
+  return {
+    id: String(m.id),
+    nom: String(m.nom ?? '').slice(0, 60) || 'Mur',
+    createdAt: dateCreation(m.createdAt),
+    updatedAt: Number(m.updatedAt) || 0,
+    partage: p && p.fichierId ? {
+      fichierId: String(p.fichierId),
+      proprietaire: Boolean(p.proprietaire),
+      lien: Boolean(p.lien),
+      invites: Array.isArray(p.invites) ? p.invites.map(String) : [],
+      perdu: Boolean(p.perdu),
+    } : null,
+  };
+}
+
+function normaliserRecurrenceRdv(c) {
+  if (!c) return null;
+  const jusquau = dateValide(c.jusquau) ? c.jusquau : null;
+  if (c.type === 'jours' && Array.isArray(c.jours)) {
+    const jours = c.jours.filter(j => INDEX_JOUR.includes(j));
+    return jours.length ? { type: 'jours', jours, semaines: entier(c.semaines, 1, 52, 1), jusquau } : null;
+  }
+  if (c.type === 'intervalle') {
+    return { type: 'intervalle', tous: entier(c.tous, 1, 365, 1), unite: ['jour', 'semaine', 'mois'].includes(c.unite) ? c.unite : 'jour', jusquau };
+  }
+  return null;
+}
+
+function normaliserRdv(r) {
+  return {
+    id: String(r.id),
+    titre: String(r.titre ?? ''),
+    date: r.date,
+    heure: heureValide(r.heure) ? r.heure : '09:00',
+    duree: entier(r.duree, 5, 1440, 60),
+    note: String(r.note ?? ''),
+    recurrence: normaliserRecurrenceRdv(r.recurrence),
+    exceptions: Array.isArray(r.exceptions) ? r.exceptions.filter(dateValide) : [],
+    mur: null, // un RDV ne dépend d'aucun mur
+    createdAt: dateCreation(r.createdAt),
+    updatedAt: Number(r.updatedAt) || 0,
+  };
+}
+
+const normaliserRecu = a => ({ id: String(a.id), nom: String(a.nom ?? 'Agenda partagé').slice(0, 80), updatedAt: Number(a.updatedAt) || 0 });
+const normaliserPartageAgenda = p => ({
+  id: String(p.id),
+  fichierId: String(p.fichierId ?? ''),
+  mursInclus: Array.isArray(p.mursInclus) ? p.mursInclus.map(String) : [],
+  updatedAt: Number(p.updatedAt) || 0,
+});
+const NORMALISEURS = { taches: normaliser, murs: normaliserMur, rdv: normaliserRdv, agendasRecus: normaliserRecu, partageAgenda: normaliserPartageAgenda };
+
+/** Lit le contenu d'un fichier ou du stockage local, en ignorant ce qui n'est pas exploitable. */
+function lireDoc(d) {
+  const doc = { suppressions: nettoyerSuppressions(d.suppressions) };
+  for (const c of COLLECTIONS) {
+    doc[c] = (Array.isArray(d[c]) ? d[c] : []).filter(x => x && x.id).map(NORMALISEURS[c]);
+  }
+  doc.rdv = doc.rdv.filter(r => dateValide(r.date));
+  doc.partageAgenda = doc.partageAgenda.filter(p => p.fichierId);
+  return doc;
+}
+
+function nettoyerSuppressions(s) {
+  return Object.fromEntries(Object.entries(objetOuVide(s)).filter(([, v]) => typeof v === 'number'));
 }
 
 function sauver() {
@@ -744,22 +1149,30 @@ function sauver() {
    ce qui a changé et noter ce qui a disparu. La fusion entre appareils s'appuie sur ces dates. */
 let instantane = new Map();
 const signature = ({ updatedAt, ...reste }) => JSON.stringify(reste);
-function prendreInstantane() { instantane = new Map(etat.taches.map(t => [t.id, signature(t)])); }
+function prendreInstantane() {
+  instantane = new Map(COLLECTIONS.flatMap(c => etat[c].map(x => [x.id, { sig: signature(x), murId: c === 'taches' ? x.murId : null }])));
+}
 
 function suivreChangements() {
   const maintenant = Date.now();
   const presents = new Set();
   let change = false;
-  for (const t of etat.taches) {
-    presents.add(t.id);
-    if (instantane.get(t.id) !== signature(t)) {
-      t.updatedAt = maintenant;
-      delete etat.suppressions[t.id];
-      change = true;
+  for (const c of COLLECTIONS) {
+    for (const x of etat[c]) {
+      presents.add(x.id);
+      if (instantane.get(x.id)?.sig !== signature(x)) {
+        x.updatedAt = maintenant;
+        delete etat.suppressions[x.id];
+        if (c === 'taches' && etat.suppMurs[x.murId]) delete etat.suppMurs[x.murId][x.id];
+        change = true;
+      }
     }
   }
-  for (const id of instantane.keys()) {
-    if (!presents.has(id)) { etat.suppressions[id] = maintenant; change = true; }
+  for (const [id, { murId }] of instantane) {
+    if (presents.has(id)) continue;
+    if (murId && murDe(murId)?.partage) (etat.suppMurs[murId] ??= {})[id] = maintenant;
+    else etat.suppressions[id] = maintenant;
+    change = true;
   }
   if (change) prendreInstantane();
   return change;
@@ -773,7 +1186,10 @@ function valider() {
 }
 
 const nouvelId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const parents = () => etat.taches.filter(t => !t.parentId);
+const murDe = id => etat.murs.find(m => m.id === id);
+const murActif = () => murDe(etat.murActif);
+// Les vues Tout et Aujourd'hui ne montrent que le mur choisi.
+const parents = () => etat.taches.filter(t => !t.parentId && t.murId === etat.murActif);
 const sousTaches = id => etat.taches.filter(t => t.parentId === id);
 const tache = id => etat.taches.find(t => t.id === id);
 
@@ -827,8 +1243,24 @@ function basculerFait(t, cleOcc) {
   }
 }
 
-function creerSousTache(parentId, titre, couleur) {
-  return normaliser({ id: nouvelId(), titre, couleur, parentId, createdAt: new Date().toISOString() });
+function creerSousTache(parentId, titre, couleur, murId) {
+  return normaliser({ id: nouvelId(), titre, couleur, parentId, murId, createdAt: new Date().toISOString() });
+}
+
+/* Les répétitives restent : leur règle continue, seule l'occurrence du jour est cochée. */
+const terminees = () => etat.taches.filter(t => t.murId === etat.murActif && t.done);
+
+function viderTerminees() {
+  const faites = new Set(terminees().map(t => t.id));
+  const retirees = etat.taches.filter(t => faites.has(t.id) || faites.has(t.parentId));
+  if (!retirees.length) return;
+  etat.taches = etat.taches.filter(t => !retirees.includes(t));
+  valider();
+  const partage = murActif()?.partage ? ' pour tout le monde' : '';
+  montrerToast(`${retirees.length} tâche${retirees.length > 1 ? 's' : ''} terminée${retirees.length > 1 ? 's' : ''} supprimée${retirees.length > 1 ? 's' : ''}${partage}.`, () => {
+    etat.taches.push(...retirees);
+    valider();
+  });
 }
 
 function supprimer(t) {
@@ -884,26 +1316,29 @@ function elementsVisibles() {
     ? elementsDuJour()
     : parents().map(t => ({ t, occ: t.recurrence ? occurrenceCourante(t) : null }));
   const filtres = etat.categorie === null ? base : base.filter(({ t }) => (t.categorie || '') === etat.categorie);
-  const limite = ({ t, occ }) => (occ ? occ.dateLimite : t.dateLimite) || '9999-12-31';
+  const limite = ({ t, occ }) => ((occ ? occ.dateLimite : t.dateLimite) || '9999-12-31') + (t.heure || '99:99');
   return filtres.sort((a, b) =>
     estFini(a) - estFini(b) ||
     limite(a).localeCompare(limite(b)) ||
     b.t.createdAt.localeCompare(a.t.createdAt));
 }
 
-function etiquetteEcheance(date, fini) {
+function etiquetteEcheance(date, fini, heure) {
   const ecart = ecartJours(aujourdhui(), date);
-  if (ecart === 0) return { texte: "Aujourd'hui" };
-  if (ecart === 1) return { texte: 'Demain' };
-  if (ecart < 0 && !fini) return { texte: `En retard · ${dateCourte(date)}`, retard: true };
-  return { texte: dateCourte(date) };
+  const suffixe = heure ? ` · ${heure}` : '';
+  const maintenant = new Date();
+  const passee = heure && ecart === 0 && enMinutes(heure) < maintenant.getHours() * 60 + maintenant.getMinutes();
+  if ((ecart < 0 || passee) && !fini) return { texte: `En retard · ${ecart === 0 ? heure : dateCourte(date) + suffixe}`, retard: true };
+  if (ecart === 0) return { texte: `Aujourd'hui${suffixe}` };
+  if (ecart === 1) return { texte: `Demain${suffixe}` };
+  return { texte: `${dateCourte(date)}${suffixe}` };
 }
 
 function rendreEcheance({ t, occ }, fini) {
   if (occ && occ.futur) return h('span', { class: 'echeance prochaine' }, `Prochaine : ${dateCourte(occ.debut)}`);
   const date = occ ? occ.dateLimite : t.dateLimite;
   if (!date) return null;
-  const { texte, retard } = etiquetteEcheance(date, fini);
+  const { texte, retard } = etiquetteEcheance(date, fini, t.heure);
   return h('span', { class: 'echeance' + (retard ? ' retard' : '') }, texte);
 }
 
@@ -968,7 +1403,7 @@ function rendrePostit(el) {
         const titre = e.target.value.trim();
         if (e.key !== 'Enter' || !titre) return;
         e.preventDefault();
-        etat.taches.push(creerSousTache(t.id, titre, t.couleur));
+        etat.taches.push(creerSousTache(t.id, titre, t.couleur, t.murId));
         e.target.value = '';
         valider();
       },
@@ -1010,6 +1445,7 @@ function rendre() {
   const cleFocus = actif && actif.dataset ? actif.dataset.cle : null;
   const saisie = cleFocus && actif.type === 'text' ? actif.value : null;
 
+  garantirMur();
   const cats = categoriesExistantes();
   if (etat.categorie && !cats.includes(etat.categorie)) etat.categorie = null;
   const aSansCat = parents().some(t => !t.categorie);
@@ -1031,6 +1467,24 @@ function rendre() {
       type: 'button', class: 'vue', 'aria-pressed': String(etat.vue === 'aujourdhui'),
       dataset: { cle: 'vue-jour' }, onclick: () => { etat.vue = 'aujourdhui'; valider(); },
     }, "Aujourd'hui", restants ? h('span', { class: 'nb' }, String(restants)) : null),
+    h('button', {
+      type: 'button', class: 'vue', 'aria-pressed': String(etat.vue === 'calendrier'),
+      dataset: { cle: 'vue-calendrier' }, onclick: () => { etat.vue = 'calendrier'; valider(); },
+    }, 'Agenda', nombreDemandes() ? h('span', { class: 'nb' }, String(nombreDemandes())) : null),
+  );
+
+  const enAgenda = etat.vue === 'calendrier';
+  const zoneMurs = document.getElementById('murs');
+  zoneMurs.hidden = enAgenda; // l'agenda rassemble tous les murs
+  zoneMurs.replaceChildren(
+    ...etat.murs.map(m => h('button', {
+      type: 'button', class: 'mur-onglet', 'aria-pressed': String(m.id === etat.murActif),
+      title: m.partage ? `${m.nom} (partagé)` : m.nom,
+      dataset: { cle: `mur-${m.id}` },
+      onclick: () => { etat.murActif = m.id; etat.categorie = null; valider(); },
+    }, m.partage ? `${m.nom} ⇄` : m.nom)),
+    h('button', { type: 'button', class: 'mur-action', dataset: { cle: 'mur-nouveau' }, onclick: () => ouvrirGestionMur() }, '+ Mur'),
+    h('button', { type: 'button', class: 'mur-action', dataset: { cle: 'mur-gerer' }, onclick: () => ouvrirGestionMur(murActif()) }, 'Gérer et partager'),
   );
 
   const puce = (texte, valeur) => h('button', {
@@ -1038,17 +1492,35 @@ function rendre() {
     dataset: { cle: `cat-${valeur}` },
     onclick: () => { etat.categorie = valeur; valider(); },
   }, texte);
-  document.getElementById('cats').replaceChildren(...(cats.length ? [
-    puce('Toutes', null),
-    ...cats.map(c => puce(c, c)),
-    aSansCat ? puce('Sans catégorie', '') : null,
-  ].filter(Boolean) : []));
+  const nbFaites = terminees().length;
+  document.getElementById('cats').replaceChildren(...(enAgenda ? [] : [
+    ...(cats.length ? [puce('Toutes', null), ...cats.map(c => puce(c, c)), aSansCat ? puce('Sans catégorie', '') : null] : []),
+    nbFaites ? h('button', {
+      type: 'button', class: 'vider', dataset: { cle: 'vider' }, onclick: viderTerminees,
+      title: 'Supprime toutes les tâches cochées de ce mur',
+    }, `Vider les terminées (${nbFaites})`) : null,
+  ].filter(Boolean)));
 
-  const elements = elementsVisibles();
+  const lectureSeule = enAgenda && Boolean(cal.source);
+  const fab = document.getElementById('ajouter');
+  const libelleFab = !enAgenda ? 'Nouveau post-it' : lectureSeule ? 'Demander un RDV' : 'Nouveau RDV';
+  fab.setAttribute('aria-label', libelleFab);
+  fab.title = libelleFab;
+
   const mur = document.getElementById('mur');
-  mur.replaceChildren(elements.length
-    ? h('div', { class: 'grille' }, elements.map(rendrePostit))
-    : rendreVide());
+  if (enAgenda) {
+    mur.replaceChildren(rendreCalendrier());
+    const corps = mur.querySelector('.cal-corps');
+    if (corps) {
+      corps.scrollTop = cal.defilement ?? 7 * HAUTEUR_HEURE;
+      corps.addEventListener('scroll', () => { cal.defilement = corps.scrollTop; });
+    }
+  } else {
+    const elements = elementsVisibles();
+    mur.replaceChildren(elements.length
+      ? h('div', { class: 'grille' }, elements.map(rendrePostit))
+      : rendreVide());
+  }
 
   nouveauId = null;
   tamponId = null;
@@ -1060,6 +1532,352 @@ function rendre() {
       cible.focus({ preventScroll: true });
     }
   }
+}
+
+/* ============ Agenda ============ */
+const HAUTEUR_HEURE = 44; // px, identique à --hh dans le CSS
+const etroit = matchMedia('(max-width: 720px)');
+// source : null = mon agenda, sinon l'id du fichier d'un agenda reçu (lecture seule).
+const cal = { jour: aujourdhui(), mode: 'semaine', source: null, defilement: null };
+const contenusAgenda = new Map(); // fichierId -> { rdv, taches, murs, majLe } ou { erreur }
+const demandes = { recues: [], miennes: new Map() }; // miennes : fichierId -> demandes envoyées
+const nombreDemandes = () => demandes.recues.length;
+
+/** Un RDV tombe-t-il ce jour-là ? Les règles suivent celles d'un RDV récurrent Outlook. */
+function rdvTombeLe(r, jour) {
+  if (jour < r.date || r.exceptions.includes(jour)) return false;
+  const c = r.recurrence;
+  if (!c) return jour === r.date;
+  if (c.jusquau && jour > c.jusquau) return false;
+  if (c.type === 'jours') {
+    if (!c.jours.includes(jourDeSemaine(jour))) return false;
+    return (ecartJours(lundiDe(r.date), lundiDe(jour)) / 7) % c.semaines === 0;
+  }
+  const ecart = ecartJours(r.date, jour);
+  if (c.unite === 'jour') return ecart % c.tous === 0;
+  if (c.unite === 'semaine') return ecart % (7 * c.tous) === 0;
+  const a = depuisCle(r.date), j = depuisCle(jour);
+  const mois = (j.getFullYear() - a.getFullYear()) * 12 + j.getMonth() - a.getMonth();
+  const dernierJour = new Date(j.getFullYear(), j.getMonth() + 1, 0).getDate();
+  // Le 31 d'un mois qui n'en a pas : dernier jour du mois, comme Outlook.
+  return mois % c.tous === 0 && j.getDate() === Math.min(a.getDate(), dernierJour);
+}
+
+const sourceCal = () => {
+  if (!cal.source) return { lecture: false, rdv: etat.rdv, taches: etat.taches, murs: etat.murs };
+  const c = contenusAgenda.get(cal.source);
+  return { lecture: true, rdv: c?.rdv || [], taches: c?.taches || [], murs: c?.murs || [], erreur: c?.erreur, majLe: c?.majLe };
+};
+
+/** Tout ce que l'agenda montre ce jour-là : les RDV, et les tâches à leur date et heure de fin. */
+function entreesDuJour(jour, src) {
+  const liste = src.rdv.filter(r => rdvTombeLe(r, jour)).map(r => ({
+    genre: 'rdv', r, jour, debut: enMinutes(r.heure), duree: r.duree, fait: false,
+  }));
+  for (const t of src.taches) {
+    if (t.parentId) continue;
+    let occ = null;
+    if (t.recurrence) {
+      const debut = ajouterJours(jour, -(t.recurrence.delai - 1));
+      if (debut < creeLe(t) || !t.recurrence.jours.includes(jourDeSemaine(debut))) continue;
+      occ = occurrence(t, debut);
+    } else if (t.dateLimite !== jour) continue;
+    liste.push({
+      genre: 'tache', t, occ, jour,
+      debut: t.heure ? enMinutes(t.heure) : null, duree: 30,
+      fait: occ ? occ.fait : t.done,
+      mur: src.murs.find(m => m.id === t.murId)?.nom || '',
+    });
+  }
+  return liste;
+}
+
+/** Répartit les entrées qui se chevauchent en colonnes côte à côte. */
+function placer(entrees) {
+  const triees = entrees.filter(e => e.debut !== null).sort((a, b) => a.debut - b.debut);
+  const places = [];
+  let groupe = [], finGroupe = -1;
+  const clore = () => {
+    const pistes = [];
+    for (const e of groupe) {
+      const fin = e.debut + Math.max(e.duree, 30);
+      let i = pistes.findIndex(f => f <= e.debut);
+      if (i < 0) i = pistes.length;
+      pistes[i] = fin;
+      places.push({ e, piste: i });
+    }
+    for (const e of groupe) e.nbPistes = pistes.length;
+    groupe = [];
+  };
+  for (const e of triees) {
+    if (e.debut >= finGroupe) { clore(); finGroupe = -1; }
+    groupe.push(e);
+    finGroupe = Math.max(finGroupe, e.debut + Math.max(e.duree, 30));
+  }
+  clore();
+  return places;
+}
+
+const fmtHeureFin = (debut, duree) => {
+  const m = Math.min(debut + duree, 24 * 60);
+  return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+};
+
+function rendreEntree(e, src, style = '') {
+  const interactif = !src.lecture;
+  const ouvrir = !interactif ? null : () => {
+    if (e.genre === 'rdv') { ouvrirRdv({ r: e.r, jour: e.jour }); return; }
+    const t = tache(e.t.id);
+    if (t) ouvrirModale(t);
+  };
+  const horaire = e.debut === null ? null : e.genre === 'rdv' ? `${e.r.heure}–${fmtHeureFin(e.debut, e.duree)}` : e.t.heure;
+  const titre = e.genre === 'rdv' ? e.r.titre : e.t.titre;
+  const description = `${e.genre === 'rdv' ? 'RDV' : 'Tâche'} : ${titre}${horaire ? `, ${horaire}` : ''}${e.mur ? `, mur ${e.mur}` : ''}`;
+  return h('div', {
+    class: `cal-e ${e.genre}${e.fait ? ' fait' : ''}${interactif ? ' cliquable' : ''}`,
+    style: (e.genre === 'tache' ? `--c:var(--p-${e.t.couleur});` : '') + style,
+    title: description,
+    role: interactif ? 'button' : null,
+    tabIndex: interactif ? 0 : null,
+    'aria-label': interactif ? description : null,
+    onclick: ouvrir,
+    onkeydown: interactif ? ev => { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ouvrir(); } } : null,
+  },
+    e.genre === 'tache' && interactif ? h('input', {
+      type: 'checkbox', class: 'cal-coche', checked: e.fait,
+      'aria-label': `Marquer « ${titre} » comme fait`,
+      onclick: ev => ev.stopPropagation(),
+      onchange: () => {
+        const t = tache(e.t.id);
+        if (t) { basculerFait(t, e.occ ? e.occ.debut : undefined); valider(); }
+      },
+    }) : null,
+    h('span', { class: 'cal-e-texte' },
+      h('div', { class: 'cal-e-titre' }, e.genre === 'rdv' ? `● ${titre}` : titre),
+      e.genre === 'rdv' && horaire ? h('div', {}, horaire) : null,
+      e.mur ? h('div', { class: 'cal-e-mur' }, `Mur : ${e.mur}`) : null,
+    ),
+  );
+}
+
+function allerA(jour) { cal.jour = jour; rendre(); }
+
+function rendreBarreCal(jours, modeEffectif, src) {
+  const pas = modeEffectif === 'semaine' ? 7 : 1;
+  const fmtJ = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const fmtS = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
+  const titre = modeEffectif === 'semaine'
+    ? `${fmtS.format(depuisCle(jours[0]))} – ${fmtS.format(depuisCle(jours[6]))}`
+    : fmtJ.format(depuisCle(cal.jour));
+  const btn = (texte, action, props = {}) => h('button', { type: 'button', class: 'cal-btn', onclick: action, ...props }, texte);
+  return h('div', { class: 'cal-barre' },
+    h('h2', { class: 'cal-titre' }, titre),
+    h('div', { class: 'cal-groupe' },
+      btn('‹', () => allerA(ajouterJours(cal.jour, -pas)), { 'aria-label': 'Période précédente' }),
+      btn("Aujourd'hui", () => allerA(aujourdhui())),
+      btn('›', () => allerA(ajouterJours(cal.jour, pas)), { 'aria-label': 'Période suivante' }),
+    ),
+    etroit.matches ? null : h('div', { class: 'cal-groupe' },
+      btn('Semaine', () => { cal.mode = 'semaine'; rendre(); }, { 'aria-pressed': String(cal.mode === 'semaine') }),
+      btn('Jour', () => { cal.mode = 'jour'; rendre(); }, { 'aria-pressed': String(cal.mode === 'jour') }),
+    ),
+    etat.agendasRecus.length ? h('select', {
+      class: 'cal-select', 'aria-label': 'Agenda affiché',
+      onchange: ev => { cal.source = ev.target.value || null; rendre(); },
+    },
+      h('option', { value: '', selected: !cal.source }, 'Mon agenda'),
+      etat.agendasRecus.map(a => h('option', { value: a.id, selected: cal.source === a.id }, `Agenda de ${a.nom}`)),
+    ) : null,
+    src.lecture
+      ? [btn('Mes demandes', ouvrirMesDemandes), btn('Retirer cet agenda', () => retirerAgendaRecu(cal.source))]
+      : [
+        nombreDemandes() ? btn(`Demandes (${nombreDemandes()})`, ouvrirDemandesRecues, { class: 'cal-btn fort' }) : null,
+        btn(etat.partageAgenda.length ? 'Agenda partagé' : "Partager l'agenda", ouvrirPartageAgenda),
+      ],
+  );
+}
+
+function rendreCalendrier() {
+  if (cal.source && !etat.agendasRecus.some(a => a.id === cal.source)) cal.source = null;
+  const src = sourceCal();
+  const modeEffectif = etroit.matches ? 'liste' : cal.mode;
+  const lundi = lundiDe(cal.jour);
+  const semaine = Array.from({ length: 7 }, (_, i) => ajouterJours(lundi, i));
+  const noteLecture = src.lecture ? h('p', { class: 'cal-note' },
+    src.erreur ? src.erreur
+      : `Lecture seule. Tu peux demander un RDV avec le gros +.${src.majLe ? ` Mis à jour le ${new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(src.majLe))}.` : ''}`) : null;
+  const legende = h('div', { class: 'cal-legende' },
+    h('span', {}, h('i', { class: 'l-rdv' }), 'RDV'),
+    h('span', {}, h('i', { class: 'l-tache' }), 'Tâche de post-it'),
+  );
+
+  if (modeEffectif === 'liste') {
+    const entrees = entreesDuJour(cal.jour, src).sort((a, b) => (a.debut ?? -1) - (b.debut ?? -1));
+    return h('section', { class: 'cal' },
+      rendreBarreCal(semaine, modeEffectif, src),
+      noteLecture,
+      h('div', { class: 'cal-bande' }, semaine.map(j => h('button', {
+        type: 'button', 'aria-pressed': String(j === cal.jour), onclick: () => allerA(j),
+        'aria-label': dateCourte(j),
+      }, jourDeSemaine(j).slice(0, 1), h('b', {}, String(depuisCle(j).getDate()))))),
+      entrees.length
+        ? h('ul', { class: 'cal-liste' }, entrees.map(e => h('li', {},
+            h('div', { class: 'quand' }, e.debut === null ? 'Journée' : pad(Math.floor(e.debut / 60)) + ':' + pad(e.debut % 60)),
+            rendreEntree(e, src),
+          )))
+        : h('p', { class: 'cal-liste-vide' }, 'Rien de prévu ce jour-là.'),
+      legende,
+    );
+  }
+
+  const jours = modeEffectif === 'semaine' ? semaine : [cal.jour];
+  const auj = aujourdhui();
+  const fmtEntete = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
+  const entrees = new Map(jours.map(j => [j, entreesDuJour(j, src)]));
+  const maintenant = new Date();
+  return h('section', { class: 'cal', style: `--n:${jours.length}` },
+    rendreBarreCal(semaine, modeEffectif, src),
+    noteLecture,
+    h('div', { class: 'cal-tete' }, h('div', {}), jours.map(j => h('div', { class: j === auj ? 'ajd' : '' },
+      fmtEntete.format(depuisCle(j)), h('b', {}, String(depuisCle(j).getDate()))))),
+    h('div', { class: 'cal-jsj' }, h('div', {}, 'Sans heure'), jours.map(j => h('div', {},
+      entrees.get(j).filter(e => e.debut === null).map(e => rendreEntree(e, src))))),
+    h('div', { class: 'cal-corps' }, h('div', { class: 'cal-lignes' },
+      h('div', { class: 'cal-heures' }, Array.from({ length: 24 }, (_, i) => h('div', {}, `${pad(i)}:00`))),
+      jours.map(j => h('div', {
+        class: 'cal-col cliquable',
+        onclick: ev => {
+          if (ev.target !== ev.currentTarget) return;
+          const minutes = Math.floor(ev.offsetY / HAUTEUR_HEURE * 2) * 30;
+          const heure = `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
+          if (src.lecture) ouvrirRdv({ date: j, heure, demande: cal.source });
+          else ouvrirRdv({ date: j, heure });
+        },
+      },
+        placer(entrees.get(j)).map(({ e, piste }) => {
+          const n = e.nbPistes;
+          const haut = e.debut / 60 * HAUTEUR_HEURE;
+          const hauteur = Math.max(24, Math.min(e.duree, 24 * 60 - e.debut) / 60 * HAUTEUR_HEURE - 2);
+          return rendreEntree(e, src, `top:${haut}px;height:${hauteur}px;left:calc(${piste / n * 100}% + 2px);width:calc(${100 / n}% - 4px);`);
+        }),
+        j === auj ? h('div', { class: 'cal-maintenant', style: `top:${(maintenant.getHours() * 60 + maintenant.getMinutes()) / 60 * HAUTEUR_HEURE}px` }) : null,
+      )),
+    )),
+    legende,
+  );
+}
+
+/* ---------- Fenêtre de RDV (et de demande de RDV) ---------- */
+let brouillonRdv = null; // { r, jour, demande }
+const modaleRdv = document.getElementById('modale-rdv');
+const DUREES = [15, 30, 45, 60, 90, 120, 180, 240, 480];
+const texteDuree = m => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)} h ${pad(m % 60)}` : `${m / 60} h`);
+
+function initialiserRdv() {
+  const r = id => document.getElementById(id);
+  r('r-jours').replaceChildren(...JOURS.map(j => h('label', { title: j.nom },
+    h('input', { type: 'checkbox', value: j.cle, 'aria-label': j.nom, onchange: () => { r('e-r-jours').textContent = ''; } }),
+    h('span', {}, j.cle),
+  )));
+  modaleRdv.querySelectorAll('input[name="rmode"]').forEach(i => i.addEventListener('change', appliquerModeRdv));
+  r('r-fermer').addEventListener('click', () => modaleRdv.close());
+  r('r-annuler').addEventListener('click', () => modaleRdv.close());
+  r('r-form').addEventListener('submit', e => { e.preventDefault(); enregistrerRdv(); });
+  r('r-suppr').addEventListener('click', supprimerRdv);
+  r('r-suppr-occ').addEventListener('click', supprimerOccurrenceRdv);
+}
+
+function appliquerModeRdv() {
+  const mode = modaleRdv.querySelector('input[name="rmode"]:checked').value;
+  document.getElementById('r-bloc-jours').hidden = mode !== 'jours';
+  document.getElementById('r-bloc-intervalle').hidden = mode !== 'intervalle';
+  document.getElementById('r-bloc-fin').hidden = mode === 'aucune';
+}
+
+function ouvrirRdv({ r = null, jour = null, date = null, heure = null, demande = null } = {}) {
+  const $r = id => document.getElementById(id);
+  brouillonRdv = { r, jour, demande };
+  const duree = r ? r.duree : 60;
+  $r('r-duree').replaceChildren(...[...new Set([...DUREES, duree])].sort((a, b) => a - b).map(m => h('option', { value: String(m), selected: m === duree }, texteDuree(m))));
+  $r('r-entete').textContent = demande ? 'Demander un RDV' : r ? 'Modifier le RDV' : 'Nouveau RDV';
+  $r('r-valider').textContent = demande ? 'Envoyer' : r ? 'Enregistrer' : 'Ajouter';
+  $r('r-note-nom').textContent = demande ? 'Message (facultatif)' : 'Note';
+  $r('r-bloc-rec').hidden = Boolean(demande);
+  $r('r-titre').value = r ? r.titre : '';
+  $r('r-date').value = r ? r.date : (date || (cal.jour >= aujourdhui() ? cal.jour : aujourdhui()));
+  $r('r-heure').value = r ? r.heure : (heure || '09:00');
+  $r('r-note').value = r ? r.note : '';
+  $r('e-r-titre').textContent = '';
+  $r('e-r-date').textContent = '';
+  $r('e-r-jours').textContent = '';
+  const c = r?.recurrence;
+  modaleRdv.querySelector(`input[name="rmode"][value="${c ? c.type : 'aucune'}"]`).checked = true;
+  const jourDefaut = jourDeSemaine($r('r-date').value);
+  $r('r-jours').querySelectorAll('input').forEach(i => { i.checked = c?.type === 'jours' ? c.jours.includes(i.value) : i.value === jourDefaut; });
+  $r('r-semaines').value = c?.type === 'jours' ? c.semaines : 1;
+  $r('r-tous').value = c?.type === 'intervalle' ? c.tous : 1;
+  $r('r-unite').value = c?.type === 'intervalle' ? c.unite : 'jour';
+  $r('r-jusquau').value = c?.jusquau || '';
+  appliquerModeRdv();
+  $r('r-suppr').hidden = !r;
+  $r('r-suppr').textContent = c ? 'Supprimer toute la série' : 'Supprimer';
+  $r('r-suppr-occ').hidden = !(r && c && jour);
+  modaleRdv.showModal();
+  modaleRdv.scrollTop = 0;
+  $r('r-titre').focus();
+}
+
+function enregistrerRdv() {
+  const $r = id => document.getElementById(id);
+  const titre = $r('r-titre').value.trim();
+  const date = $r('r-date').value;
+  const heure = $r('r-heure').value;
+  let ok = true;
+  if (!titre) { $r('e-r-titre').textContent = 'Il faut un titre.'; ok = false; }
+  if (!dateValide(date) || !heureValide(heure)) { $r('e-r-date').textContent = 'Il faut une date et une heure.'; ok = false; }
+  const mode = modaleRdv.querySelector('input[name="rmode"]:checked').value;
+  const jours = JOURS.map(j => j.cle).filter(c => $r('r-jours').querySelector(`input[value="${c}"]`).checked);
+  if (!brouillonRdv.demande && mode === 'jours' && !jours.length) { $r('e-r-jours').textContent = 'Choisis au moins un jour.'; ok = false; }
+  if (!ok) return;
+  const duree = entier($r('r-duree').value, 5, 1440, 60);
+  const note = $r('r-note').value.trim();
+
+  if (brouillonRdv.demande) {
+    const fichierId = brouillonRdv.demande;
+    modaleRdv.close();
+    envoyerDemande(fichierId, { titre, date, heure, duree, message: note });
+    return;
+  }
+  const jusquau = $r('r-jusquau').value || null;
+  const recurrence = mode === 'jours' ? { type: 'jours', jours, semaines: $r('r-semaines').value, jusquau }
+    : mode === 'intervalle' ? { type: 'intervalle', tous: $r('r-tous').value, unite: $r('r-unite').value, jusquau }
+    : null;
+  const champs = { titre, date, heure, duree, note, recurrence: normaliserRecurrenceRdv(recurrence) };
+  const existant = brouillonRdv.r ? etat.rdv.find(x => x.id === brouillonRdv.r.id) : null;
+  if (existant) Object.assign(existant, champs);
+  else etat.rdv.push(normaliserRdv({ ...(brouillonRdv.r || {}), id: brouillonRdv.r?.id || nouvelId(), createdAt: brouillonRdv.r?.createdAt || new Date().toISOString(), ...champs }));
+  modaleRdv.close();
+  cal.jour = date;
+  valider();
+}
+
+function supprimerRdv() {
+  const r = etat.rdv.find(x => x.id === brouillonRdv.r.id);
+  modaleRdv.close();
+  if (!r) return;
+  etat.rdv = etat.rdv.filter(x => x !== r);
+  valider();
+  montrerToast('RDV supprimé.', () => { etat.rdv.push(r); valider(); });
+}
+
+function supprimerOccurrenceRdv() {
+  const r = etat.rdv.find(x => x.id === brouillonRdv.r.id);
+  const jour = brouillonRdv.jour;
+  modaleRdv.close();
+  if (!r) return;
+  r.exceptions = [...r.exceptions, jour];
+  valider();
+  montrerToast(`RDV retiré le ${dateCourte(jour)}.`, () => { r.exceptions = r.exceptions.filter(x => x !== jour); valider(); });
 }
 
 /* ============ Toast ============ */
@@ -1099,8 +1917,10 @@ function initialiserModale() {
   $('raccourcis-date').replaceChildren(
     h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = aujourdhui(); } }, "Aujourd'hui"),
     h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = ajouterJours(aujourdhui(), 1); } }, 'Demain'),
-    h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = ''; } }, 'Sans date'),
+    h('button', { type: 'button', class: 'puce', onclick: () => { $('f-date').value = ''; $('f-heure').value = ''; $('e-heure').textContent = ''; } }, 'Sans date'),
   );
+  $('f-heure').addEventListener('input', () => { $('e-heure').textContent = ''; });
+  $('f-date').addEventListener('input', () => { $('e-heure').textContent = ''; });
   modale.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', appliquerMode));
   $('f-delai').addEventListener('input', majRecap);
   $('f-categorie').addEventListener('input', rendreCatsModale);
@@ -1119,7 +1939,11 @@ function initialiserModale() {
     if (t) supprimer(t);
   });
   $('formulaire').addEventListener('submit', e => { e.preventDefault(); enregistrerModale(); });
-  $('ajouter').addEventListener('click', () => ouvrirModale());
+  $('ajouter').addEventListener('click', () => {
+    if (etat.vue !== 'calendrier') ouvrirModale();
+    else if (cal.source) ouvrirRdv({ demande: cal.source });
+    else ouvrirRdv();
+  });
 }
 
 function appliquerCouleur() { modale.style.setProperty('--c', `var(--p-${couleurChoisie()})`); }
@@ -1183,6 +2007,11 @@ function ouvrirModale(t = null) {
   $('f-titre').value = t ? t.titre : '';
   $('f-note').value = t ? t.note : '';
   $('f-date').value = t && t.dateLimite ? t.dateLimite : '';
+  $('f-heure').value = t && t.heure ? t.heure : '';
+  $('e-heure').textContent = '';
+  const murChoisi = t ? t.murId : etat.murActif;
+  $('f-mur').replaceChildren(...etat.murs.map(m => h('option', { value: m.id, selected: m.id === murChoisi }, m.partage ? `${m.nom} (partagé)` : m.nom)));
+  $('bloc-mur').hidden = etat.murs.length < 2;
   $('f-delai').value = t && t.recurrence ? t.recurrence.delai : 1;
   $('f-categorie').value = t && t.categorie ? t.categorie : (!t && etat.categorie ? etat.categorie : '');
   $('f-sous').value = '';
@@ -1214,7 +2043,10 @@ function enregistrerModale() {
   let ok = true;
   if (!titre) { $('e-titre').textContent = 'Il faut un titre.'; $('f-titre').focus(); ok = false; }
   if (rep && !jours.length) { $('e-jours').textContent = 'Choisis au moins un jour.'; ok = false; }
+  const heure = $('f-heure').value || null;
+  if (!rep && heure && !$('f-date').value) { $('e-heure').textContent = 'Choisis aussi une date limite.'; ok = false; }
   if (!ok) return;
+  const murChoisi = murDe($('f-mur').value) ? $('f-mur').value : etat.murActif;
 
   // Même catégorie quelle que soit la casse : « sport » rejoint « Sport ».
   const saisieCat = $('f-categorie').value.trim();
@@ -1229,6 +2061,7 @@ function enregistrerModale() {
     categorie,
     recurrence: rep ? { jours: JOURS.map(j => j.cle).filter(c => jours.includes(c)), delai: delaiChoisi() } : null,
     dateLimite: rep ? null : ($('f-date').value || null),
+    heure,
   };
 
   // Une synchro a pu remplacer les objets pendant que la modale était ouverte : on repart de l'id.
@@ -1239,7 +2072,7 @@ function enregistrerModale() {
     t = normaliser({ ...brouillon.tache, ...champs }); // supprimé ailleurs entre-temps : cette édition le ramène
     etat.taches.push(t);
   } else {
-    t = normaliser({ id: nouvelId(), createdAt: new Date().toISOString(), ...champs });
+    t = normaliser({ id: nouvelId(), createdAt: new Date().toISOString(), murId: murChoisi, ...champs });
     etat.taches.push(t);
     nouveauId = t.id;
   }
@@ -1250,11 +2083,33 @@ function enregistrerModale() {
   for (const s of gardes) {
     const existante = s.id ? tache(s.id) : null;
     if (existante) existante.titre = s.titre.trim();
-    else etat.taches.push(creerSousTache(t.id, s.titre.trim(), t.couleur));
+    else etat.taches.push(creerSousTache(t.id, s.titre.trim(), t.couleur, t.murId));
   }
+
+  if (t.murId !== murChoisi) deplacerVersMur(t, murChoisi);
 
   modale.close();
   valider();
+}
+
+/* Vers ou depuis un mur partagé, la tâche change de fichier Drive : elle repart sous un nouvel id,
+   pour que sa suppression de l'ancien mur ne l'efface pas du nouveau. */
+function deplacerVersMur(t, murId) {
+  const famille = [t, ...sousTaches(t.id)];
+  if (!murDe(t.murId)?.partage && !murDe(murId)?.partage) {
+    for (const x of famille) x.murId = murId;
+  } else {
+    const nouvelIdParent = nouvelId();
+    etat.taches = etat.taches.filter(x => !famille.includes(x));
+    for (const x of famille) {
+      etat.taches.push(normaliser({
+        ...x, murId,
+        id: x === t ? nouvelIdParent : nouvelId(),
+        parentId: x === t ? null : nouvelIdParent,
+      }));
+    }
+  }
+  montrerToast(`Déplacé vers « ${murDe(murId).nom} ».`);
 }
 
 /* ============ Fusion entre appareils ============
@@ -1268,41 +2123,81 @@ function plusRecente(a, b) {
   return JSON.stringify(a) >= JSON.stringify(b) ? a : b; // égalité : même choix sur tous les appareils
 }
 
-function fusionner(a, b) {
+function fusionnerListes(a, b, collections) {
   const seuil = Date.now() - CONSERVATION_SUPPRESSIONS;
   const suppressions = {};
   for (const source of [a.suppressions, b.suppressions]) {
-    for (const [id, date] of Object.entries(source)) {
+    for (const [id, date] of Object.entries(source || {})) {
       if (date >= seuil && !(suppressions[id] > date)) suppressions[id] = date;
     }
   }
-  const parId = new Map();
-  for (const t of [...a.taches, ...b.taches]) {
-    const deja = parId.get(t.id);
-    parId.set(t.id, deja ? plusRecente(deja, t) : t);
+  const resultat = { suppressions };
+  for (const c of collections) {
+    const parId = new Map();
+    for (const x of [...(a[c] || []), ...(b[c] || [])]) {
+      const deja = parId.get(x.id);
+      parId.set(x.id, deja ? plusRecente(deja, x) : x);
+    }
+    for (const [id, x] of parId) {
+      if (suppressions[id] === undefined) continue;
+      if (suppressions[id] >= x.updatedAt) parId.delete(id);
+      else delete suppressions[id];
+    }
+    resultat[c] = [...parId.values()];
   }
-  for (const [id, t] of parId) {
-    if (suppressions[id] === undefined) continue;
-    if (suppressions[id] >= t.updatedAt) parId.delete(id);
-    else delete suppressions[id];
-  }
+  const ids = new Set(resultat.taches.map(t => t.id));
   // Une sous-tâche ajoutée ici alors que son parent a été supprimé ailleurs part avec lui.
-  const taches = [...parId.values()].filter(t => !t.parentId || parId.has(t.parentId));
-  return { taches, suppressions };
+  resultat.taches = resultat.taches.filter(t => !t.parentId || ids.has(t.parentId));
+  return resultat;
 }
 
-function formeCanonique({ taches, suppressions }) {
-  return JSON.stringify({
-    taches: [...taches].sort((x, y) => x.id.localeCompare(y.id)),
-    suppressions: Object.entries(suppressions).sort(([x], [y]) => x.localeCompare(y)),
-  });
+function fusionner(a, b) {
+  const f = fusionnerListes(a, b, COLLECTIONS);
+  if (!f.murs.length) {
+    f.murs = [murParDefaut()];
+    delete f.suppressions[MUR_DEFAUT];
+  }
+  // Tâche sur un mur disparu : elle part avec lui si le mur a été supprimé après sa dernière
+  // modification, sinon elle rejoint un autre mur plutôt que d'être perdue.
+  const refuge = [...f.murs].sort((x, y) => x.id.localeCompare(y.id))[0].id;
+  const connus = new Set(f.murs.map(m => m.id));
+  const gardees = new Set();
+  f.taches = f.taches.flatMap(t => {
+    if (connus.has(t.murId)) { gardees.add(t.id); return [t]; }
+    if (f.suppressions[t.murId] >= t.updatedAt) return [];
+    gardees.add(t.id);
+    return [{ ...t, murId: refuge }];
+  }).filter(t => !t.parentId || gardees.has(t.parentId));
+  return f;
+}
+
+function formeCanonique(doc) {
+  const forme = { suppressions: Object.entries(doc.suppressions || {}).sort(([x], [y]) => x.localeCompare(y)) };
+  for (const c of COLLECTIONS) {
+    forme[c] = (doc[c] || []).map(NORMALISEURS[c]).sort((x, y) => x.id.localeCompare(y.id));
+  }
+  return JSON.stringify(forme);
+}
+
+const docLocal = () => ({
+  taches: etat.taches, murs: etat.murs, rdv: etat.rdv,
+  agendasRecus: etat.agendasRecus, partageAgenda: etat.partageAgenda, suppressions: etat.suppressions,
+});
+
+/** Le fichier privé ne contient pas les tâches des murs partagés : elles vivent dans le fichier de leur mur. */
+function docPrive(doc) {
+  const partages = new Set(doc.murs.filter(m => m.partage).map(m => m.id));
+  return { ...doc, taches: doc.taches.filter(t => !partages.has(t.murId)) };
 }
 
 /* ============ Synchro Google Drive ============
-   Un seul fichier, postits.json, dans l'espace privé de l'app sur Drive (appDataFolder) :
-   invisible dans Drive, et cette permission ne donne accès à aucun autre fichier. */
+   Les données privées vont dans un fichier de l'espace réservé à l'app sur Drive (appDataFolder), invisible
+   dans Drive. Seuls les murs et l'agenda partagés ont un fichier visible. La permission drive.file ne donne
+   accès qu'aux fichiers créés par l'app ou choisis par l'utilisateur dans le sélecteur Google. */
 const PORTEE = 'https://www.googleapis.com/auth/drive.appdata';
-const NOM_FICHIER = 'postits.json';
+const PORTEE_FICHIERS = 'https://www.googleapis.com/auth/drive.file';
+const NOM_FICHIER = 'postits-v2.json';
+const NOM_FICHIER_V1 = 'postits.json'; // repris une fois, jamais réécrit : un ancien onglet resté ouvert ne peut rien abîmer
 const API_DRIVE = 'https://www.googleapis.com/drive/v3';
 const API_ENVOI = 'https://www.googleapis.com/upload/drive/v3';
 const CLE_COMPTE = 'postits.compte';
@@ -1313,7 +2208,9 @@ const drive = {
   statut: 'deconnecte', // deconnecte | expire | synchro | ok | erreur
   message: '', derniere: null, email: null, connecte: false,
   enCours: false, aRefaire: false, minuteur: null,
+  portees: '', apresJeton: null,
 };
+const aPorteeFichiers = () => drive.portees.includes(PORTEE_FICHIERS);
 
 const jetonValide = () => Boolean(drive.jeton) && Date.now() < drive.expire - 30000;
 
@@ -1367,9 +2264,9 @@ function preparerGoogle() {
   script.onload = () => {
     drive.clientJeton = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
-      scope: PORTEE,
+      scope: `${PORTEE} ${PORTEE_FICHIERS}`,
       callback: recevoirJeton,
-      error_callback: () => montrerToast('Connexion à Google interrompue.'),
+      error_callback: () => { drive.apresJeton = null; montrerToast('Connexion à Google interrompue.'); },
     });
   };
   document.head.append(script);
@@ -1392,17 +2289,30 @@ function connecterDrive() {
 }
 
 function recevoirJeton(reponse) {
+  const suite = drive.apresJeton;
+  drive.apresJeton = null;
   if (reponse.error || !reponse.access_token) {
     montrerToast('Connexion à Google refusée.');
     return;
   }
   drive.jeton = reponse.access_token;
   drive.expire = Date.now() + Number(reponse.expires_in) * 1000;
+  drive.portees = reponse.scope || '';
   drive.connecte = true;
   ecrireCompte();
-  try { sessionStorage.setItem(CLE_JETON, JSON.stringify({ jeton: drive.jeton, expire: drive.expire })); } catch {}
+  try { sessionStorage.setItem(CLE_JETON, JSON.stringify({ jeton: drive.jeton, expire: drive.expire, portees: drive.portees })); } catch {}
   synchroniser();
   if (!drive.email) chercherEmail();
+  if (!suite) return;
+  if (aPorteeFichiers()) suite();
+  else montrerToast('Pour partager, il faut autoriser l’accès aux fichiers créés par l’app.');
+}
+
+/** Lance une action qui touche aux fichiers partagés, en demandant à Google l'accès s'il le faut. */
+function avecAccesFichiers(action) {
+  if (jetonValide() && aPorteeFichiers()) { action(); return; }
+  drive.apresJeton = action;
+  connecterDrive();
 }
 
 async function chercherEmail() {
@@ -1428,43 +2338,645 @@ function deconnecterDrive() {
 
 async function appelDrive(url, options = {}) {
   const r = await fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${drive.jeton}` } });
-  if (!r.ok) throw Object.assign(new Error(`Drive ${r.status}`), { status: r.status });
+  if (!r.ok) {
+    let raison = null;
+    try { raison = (await r.clone().json()).error?.errors?.[0]?.reason || null; } catch {}
+    throw Object.assign(new Error(`Drive ${r.status}`), { status: r.status, raison });
+  }
   return r;
 }
 
+const appelJson = (url, corps, methode = 'POST') => appelDrive(url, {
+  method: methode, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corps),
+});
+
 async function lireDistant() {
-  const q = encodeURIComponent(`name='${NOM_FICHIER}'`);
+  const q = encodeURIComponent(`name='${NOM_FICHIER}' or name='${NOM_FICHIER_V1}'`);
   const liste = await (await appelDrive(
-    `${API_DRIVE}/files?spaces=appDataFolder&q=${q}&fields=files(id)&orderBy=createdTime&pageSize=10`
+    `${API_DRIVE}/files?spaces=appDataFolder&q=${q}&fields=files(id,name)&orderBy=createdTime&pageSize=20`
   )).json();
+  const v2 = liste.files.filter(f => f.name === NOM_FICHIER);
+  const aLire = v2.length ? v2 : liste.files; // pas encore de fichier v2 : on reprend les post-its de l'ancien
   // Deux appareils connectés en même temps peuvent créer deux fichiers : on les fusionne.
-  let distant = { taches: [], suppressions: {} };
-  for (const f of liste.files) {
+  let distant = { taches: [], murs: [], rdv: [], agendasRecus: [], partageAgenda: [], suppressions: {} };
+  for (const f of aLire) {
     const d = await (await appelDrive(`${API_DRIVE}/files/${f.id}?alt=media`)).json();
-    distant = fusionner(distant, {
-      taches: (Array.isArray(d.taches) ? d.taches : []).filter(t => t && t.id).map(normaliser),
-      suppressions: d.suppressions && typeof d.suppressions === 'object' ? d.suppressions : {},
-    });
+    distant = fusionnerListes(distant, lireDoc(d), COLLECTIONS);
   }
-  return { distant, idFichier: liste.files[0]?.id || null };
+  return { distant, idFichier: v2[0]?.id || null };
 }
 
-async function ecrireDistant(idFichier, contenu) {
-  const corps = JSON.stringify({ version: 1, ...contenu });
-  if (idFichier) {
-    await appelDrive(`${API_ENVOI}/files/${idFichier}?uploadType=media`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: corps,
-    });
-    return;
-  }
+async function creerFichier(meta, corps, champs = 'id') {
   const limite = 'postits' + nouvelId();
-  const meta = JSON.stringify({ name: NOM_FICHIER, parents: ['appDataFolder'] });
-  await appelDrive(`${API_ENVOI}/files?uploadType=multipart`, {
+  const r = await appelDrive(`${API_ENVOI}/files?uploadType=multipart&fields=${champs}`, {
     method: 'POST',
     headers: { 'Content-Type': `multipart/related; boundary=${limite}` },
-    body: `--${limite}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n` +
+    body: `--${limite}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n` +
           `--${limite}\r\nContent-Type: application/json\r\n\r\n${corps}\r\n--${limite}--`,
   });
+  return r.json();
+}
+
+const remplacerFichier = (id, corps) => appelDrive(`${API_ENVOI}/files/${id}?uploadType=media`, {
+  method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: corps,
+});
+
+async function ecrireDistant(idFichier, contenu) {
+  const corps = JSON.stringify({ version: 2, ...contenu });
+  if (idFichier) await remplacerFichier(idFichier, corps);
+  else await creerFichier({ name: NOM_FICHIER, parents: ['appDataFolder'] }, corps);
+}
+
+/* ---------- Murs partagés ----------
+   Chaque mur partagé a son propre fichier dans le Drive de son créateur. Tous les participants y fusionnent
+   leurs changements, avec les mêmes règles que la synchro entre appareils. */
+const accesPerdu = e => e.status === 404 || (e.status === 403 && ['insufficientFilePermissions', 'appNotAuthorizedToFile'].includes(e.raison));
+
+const docMur = (m, taches, suppressions) => JSON.stringify({
+  type: 'postits-mur', version: 1, mur: { id: m.id, nom: m.nom, updatedAt: m.updatedAt }, taches, suppressions,
+});
+
+async function synchroMur(m) {
+  const d = await (await appelDrive(`${API_DRIVE}/files/${m.partage.fichierId}?alt=media`)).json();
+  if (d.type !== 'postits-mur') throw new Error('Fichier de mur illisible'); // on ne l'écrase pas
+  const brut = lireDoc({ taches: d.taches, suppressions: d.suppressions });
+  // Le fichier peut venir de n'importe quel participant : ses tâches restent sur ce mur,
+  // et un id déjà utilisé sur un autre mur est ignoré.
+  const ailleurs = new Set(etat.taches.filter(t => t.murId !== m.id).map(t => t.id));
+  const distant = {
+    taches: brut.taches.filter(t => !ailleurs.has(t.id)).map(t => ({ ...t, murId: m.id })),
+    suppressions: brut.suppressions,
+  };
+  const local = { taches: etat.taches.filter(t => t.murId === m.id), suppressions: etat.suppMurs[m.id] || {} };
+  const fusion = fusionnerListes(local, distant, ['taches']);
+  const canon = formeCanonique(fusion);
+  let change = false;
+  if (canon !== formeCanonique(local)) {
+    etat.taches = [...etat.taches.filter(t => t.murId !== m.id), ...fusion.taches];
+    etat.suppMurs[m.id] = fusion.suppressions;
+    change = true;
+  }
+  const nomDistant = String(d.mur?.nom ?? '').slice(0, 60);
+  if (nomDistant && Number(d.mur?.updatedAt) > m.updatedAt && nomDistant !== m.nom) {
+    m.nom = nomDistant;
+    m.updatedAt = Number(d.mur.updatedAt);
+    change = true;
+  }
+  if (change) { prendreInstantane(); sauver(); rendre(); }
+  const nomAJour = d.mur?.nom === m.nom;
+  if (!nomAJour || canon !== formeCanonique(distant)) {
+    await remplacerFichier(m.partage.fichierId, docMur(m, fusion.taches, fusion.suppressions));
+  }
+}
+
+async function synchroMursPartages() {
+  let erreur = null;
+  for (const m of etat.murs) {
+    if (!m.partage || m.partage.perdu) continue;
+    try {
+      await synchroMur(m);
+    } catch (e) {
+      if (e.status === 401) throw e;
+      if (accesPerdu(e)) {
+        m.partage.perdu = true;
+        valider();
+        montrerToast(`Tu n’as plus accès au mur « ${m.nom} ».`);
+      } else erreur = e;
+    }
+  }
+  if (erreur) throw erreur;
+}
+
+/* ---------- Agenda partagé ----------
+   Le destinataire a le rôle « commentateur » sur le fichier : Google l'empêche de modifier l'agenda, et ses
+   demandes de RDV sont des commentaires que le propriétaire accepte ou refuse. */
+let derniereCopieAgenda = null;
+
+function copieAgenda(pa) {
+  const inclus = new Set(pa.mursInclus);
+  return {
+    rdv: etat.rdv.map(({ note, updatedAt, createdAt, ...r }) => r),
+    // Ni notes ni sous-tâches : seulement ce que l'agenda affiche.
+    taches: etat.taches.filter(t => !t.parentId && inclus.has(t.murId)).map(t => ({
+      id: t.id, titre: t.titre, couleur: t.couleur, dateLimite: t.dateLimite, heure: t.heure, murId: t.murId,
+      recurrence: t.recurrence, createdAt: t.createdAt, done: t.done, occurrencesFaites: t.occurrencesFaites,
+    })),
+    murs: etat.murs.filter(m => inclus.has(m.id)).map(m => ({ id: m.id, nom: m.nom })),
+  };
+}
+
+async function publierAgenda(pa) {
+  const copie = JSON.stringify(copieAgenda(pa));
+  if (copie === derniereCopieAgenda) return;
+  await remplacerFichier(pa.fichierId, JSON.stringify({ type: 'postits-agenda', version: 1, majLe: new Date().toISOString(), ...JSON.parse(copie) }));
+  derniereCopieAgenda = copie;
+}
+
+const CHAMPS_COMMENTAIRES = 'comments(id,content,createdTime,resolved,author(displayName,me),replies(content,action))';
+
+function lireDemande(c) {
+  try {
+    const d = JSON.parse(c.content);
+    if (d.postits !== 'demande-rdv' || !dateValide(d.date) || !heureValide(d.heure)) return null;
+    const reponse = (c.replies || []).map(x => x.content).reverse().find(x => x === 'accepte' || x === 'refuse');
+    return {
+      id: c.id,
+      de: String(c.author?.displayName ?? 'Quelqu’un'),
+      moi: Boolean(c.author?.me),
+      titre: String(d.titre ?? '').slice(0, 140) || 'RDV',
+      date: d.date, heure: d.heure,
+      duree: entier(d.duree, 5, 1440, 60),
+      message: String(d.message ?? '').slice(0, 500),
+      statut: reponse || (c.resolved ? 'refuse' : 'attente'),
+    };
+  } catch { return null; }
+}
+
+async function lireDemandes(fichierId) {
+  const r = await (await appelDrive(`${API_DRIVE}/files/${fichierId}/comments?fields=${encodeURIComponent(CHAMPS_COMMENTAIRES)}&pageSize=100`)).json();
+  return (r.comments || []).map(lireDemande).filter(Boolean);
+}
+
+async function lireAgendaRecu(a) {
+  try {
+    const d = await (await appelDrive(`${API_DRIVE}/files/${a.id}?alt=media`)).json();
+    if (d.type !== 'postits-agenda') throw new Error('Agenda illisible');
+    const doc = lireDoc({ rdv: d.rdv, taches: d.taches });
+    contenusAgenda.set(a.id, {
+      rdv: doc.rdv, taches: doc.taches,
+      murs: (Array.isArray(d.murs) ? d.murs : []).map(m => ({ id: String(m?.id), nom: String(m?.nom ?? '') })),
+      majLe: Date.parse(d.majLe) ? d.majLe : null,
+    });
+    demandes.miennes.set(a.id, (await lireDemandes(a.id)).filter(x => x.moi));
+  } catch (e) {
+    if (e.status === 401) throw e;
+    contenusAgenda.set(a.id, { erreur: accesPerdu(e) ? 'Tu n’as plus accès à cet agenda.' : 'Agenda momentanément indisponible.' });
+  }
+}
+
+async function synchroAgendas() {
+  const pa = etat.partageAgenda[0];
+  if (pa) {
+    await publierAgenda(pa);
+    demandes.recues = (await lireDemandes(pa.fichierId)).filter(x => x.statut === 'attente');
+  } else demandes.recues = [];
+  for (const a of etat.agendasRecus) await lireAgendaRecu(a);
+  rendreSiPasDeSaisie();
+}
+
+// Le rendu remplace le mur : pas de nouveau rendu pendant qu'on tape dans un champ du calendrier ou d'une fenêtre.
+function rendreSiPasDeSaisie() {
+  if (!document.querySelector('dialog[open]')) rendre();
+}
+
+/* ---------- Sélecteur Google : donne à l'app l'accès à un fichier partagé par quelqu'un d'autre ---------- */
+let pickerPret = null;
+function chargerPicker() {
+  if (window.google?.picker) return Promise.resolve();
+  pickerPret ??= new Promise((ok, ko) => {
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => gapi.load('picker', { callback: ok, onerror: ko });
+    script.onerror = ko;
+    document.head.append(script);
+  }).catch(e => { pickerPret = null; throw e; });
+  return pickerPret;
+}
+
+async function choisirFichier(fichierId) {
+  await chargerPicker();
+  const p = google.picker;
+  return new Promise(ok => {
+    new p.PickerBuilder()
+      .addView(new p.DocsView(p.ViewId.DOCS).setFileIds(fichierId).setMode(p.DocsViewMode.LIST))
+      .setOAuthToken(drive.jeton)
+      .setDeveloperKey(GOOGLE_API_KEY)
+      .setAppId(GOOGLE_APP_ID)
+      .setTitle('Clique sur le fichier partagé, puis sur Sélectionner')
+      .setCallback(r => {
+        if (r[p.Response.ACTION] === p.Action.PICKED) ok(r[p.Response.DOCUMENTS]?.[0]?.[p.Document.ID] === fichierId);
+        else if (r[p.Response.ACTION] === p.Action.CANCEL) ok(false);
+      })
+      .build()
+      .setVisible(true);
+  });
+}
+
+/* ---------- Fenêtre générique ---------- */
+const feuille = document.getElementById('feuille');
+function ouvrirFeuille(titre, ...contenu) {
+  document.getElementById('fe-titre').textContent = titre;
+  document.getElementById('fe-corps').replaceChildren(...contenu.flat().filter(Boolean));
+  if (!feuille.open) feuille.showModal();
+}
+document.getElementById('fe-fermer').addEventListener('click', () => feuille.close());
+
+function champLien(lien) {
+  const champ = h('input', { type: 'text', value: lien, readOnly: true, 'aria-label': 'Lien de partage', onfocus: e => e.target.select() });
+  return h('div', { class: 'ligne-lien' }, champ, h('button', {
+    type: 'button', class: 'btn-encre',
+    onclick: async () => {
+      try { await navigator.clipboard.writeText(lien); montrerToast('Lien copié.'); }
+      catch { champ.focus(); montrerToast('Copie impossible : sélectionne le lien à la main.'); }
+    },
+  }, 'Copier'));
+}
+
+const lienPartage = (genre, id) => `${location.origin}${location.pathname}#${genre}=${encodeURIComponent(id)}`;
+const texteErreurDrive = e => (e.status === 401 ? 'La session Google a expiré : reprends la synchro, puis réessaie.'
+  : !navigator.onLine || e instanceof TypeError ? 'Pas de connexion : réessaie une fois en ligne.'
+  : 'Google a refusé l’opération. Réessaie dans un instant.');
+
+// Enveloppe les actions Drive déclenchées par un bouton : affiche l'erreur au lieu de la laisser passer.
+const actionDrive = fn => async (...args) => {
+  try { await fn(...args); }
+  catch (e) { montrerToast(texteErreurDrive(e)); }
+};
+
+/* ---------- Gestion d'un mur ---------- */
+function ouvrirGestionMur(m = null) {
+  const nom = h('input', { type: 'text', maxLength: 60, autocomplete: 'off', value: m ? m.nom : '', placeholder: 'Boulot' });
+  const erreur = h('p', { class: 'erreur' });
+  const enregistrer = ev => {
+    ev.preventDefault();
+    const valeur = nom.value.trim();
+    if (!valeur) { erreur.textContent = 'Il faut un nom.'; return; }
+    if (m) {
+      m.nom = valeur;
+      valider();
+      montrerToast('Mur renommé.');
+      if (m.partage?.proprietaire) renommerFichierMur(m);
+    } else {
+      const neuf = normaliserMur({ id: nouvelId(), nom: valeur, createdAt: new Date().toISOString() });
+      etat.murs.push(neuf);
+      etat.murActif = neuf.id;
+      etat.categorie = null;
+      if (etat.vue === 'calendrier') etat.vue = 'tout';
+      feuille.close();
+      valider();
+    }
+  };
+  const formNom = h('form', { novalidate: true, onsubmit: enregistrer },
+    h('label', { class: 'champ' }, h('span', { class: 'nom' }, 'Nom du mur'), nom, erreur),
+    h('div', { class: 'modale-pied' }, h('span', { class: 'espace' }), h('button', { type: 'submit', class: 'btn-encre' }, m ? 'Renommer' : 'Créer le mur')),
+  );
+  if (!m) { ouvrirFeuille('Nouveau mur', formNom); nom.focus(); return; }
+  ouvrirFeuille(`Mur « ${m.nom} »`, formNom, sectionPartageMur(m), sectionSuppressionMur(m));
+}
+
+const renommerFichierMur = m => appelJson(`${API_DRIVE}/files/${m.partage.fichierId}`, { name: `Post-its - ${m.nom}.json` }, 'PATCH').catch(() => {});
+
+function sectionPartageMur(m) {
+  const p = m.partage;
+  const section = (...c) => h('section', { class: 'feuille-section' }, h('h3', {}, 'Partage'), ...c);
+  if (!GOOGLE_API_KEY) return section(h('p', { class: 'feuille-texte' }, 'Le partage n’est pas encore activé sur cette version de l’app.'));
+  if (!p) {
+    return section(
+      h('p', { class: 'feuille-texte' }, 'Seul ce mur est partagé, jamais les autres. Les personnes invitées pourront voir, ajouter, modifier et supprimer ses tâches. Un fichier est créé dans ton Google Drive.'),
+      h('div', { class: 'modale-pied' }, h('span', { class: 'espace' }), h('button', {
+        type: 'button', class: 'btn-encre',
+        onclick: () => avecAccesFichiers(actionDrive(() => partagerMur(m))),
+      }, 'Partager ce mur')),
+    );
+  }
+  if (p.perdu) {
+    return section(h('p', { class: 'attention' }, 'Tu n’as plus accès à ce mur partagé. Ses tâches restent ici, mais ne se synchronisent plus.'));
+  }
+  if (!p.proprietaire) {
+    return section(
+      h('p', { class: 'feuille-texte' }, 'Ce mur t’a été partagé. Ce lien fonctionne seulement si son créateur t’a donné accès.'),
+      champLien(lienPartage('mur', p.fichierId)),
+    );
+  }
+  const courriel = h('input', { type: 'email', placeholder: 'prenom@exemple.com', autocomplete: 'off', 'aria-label': 'Adresse de la personne à inviter' });
+  return section(
+    h('label', { class: 'cocher' },
+      h('input', {
+        type: 'checkbox', checked: p.lien,
+        onchange: ev => {
+          const coche = ev.target.checked;
+          ev.target.checked = !coche; // revient à l'état réel tant que Google n'a pas répondu
+          avecAccesFichiers(actionDrive(() => changerLienMur(m, coche)));
+        },
+      }),
+      h('span', {}, 'Toute personne qui a le lien peut voir et modifier ce mur'),
+    ),
+    p.lien ? [champLien(lienPartage('mur', p.fichierId)), h('p', { class: 'attention' }, 'Ne donne ce lien qu’aux personnes de confiance : il permet de tout modifier ou supprimer.')] : null,
+    h('form', {
+      novalidate: true, class: 'ligne-lien',
+      onsubmit: ev => {
+        ev.preventDefault();
+        const adresse = courriel.value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) { montrerToast('Cette adresse e-mail ne semble pas valide.'); return; }
+        avecAccesFichiers(actionDrive(() => inviterMur(m, adresse)));
+      },
+    }, courriel, h('button', { type: 'submit', class: 'btn-encre' }, 'Inviter')),
+    p.invites.length ? h('p', { class: 'feuille-texte' }, `Invités : ${p.invites.join(', ')}`) : null,
+    h('div', { class: 'modale-pied' }, h('button', {
+      type: 'button', class: 'lien',
+      onclick: () => avecAccesFichiers(actionDrive(() => arreterPartageMur(m))),
+    }, 'Arrêter le partage')),
+  );
+}
+
+function sectionSuppressionMur(m) {
+  const participant = m.partage && !m.partage.proprietaire;
+  if (etat.murs.length < 2) return h('section', { class: 'feuille-section' }, h('p', { class: 'feuille-texte' }, 'C’est ton seul mur : il ne peut pas être supprimé.'));
+  const bouton = h('button', {
+    type: 'button', class: 'lien',
+    onclick: () => {
+      if (participant) { quitterMur(m); return; }
+      if (m.partage) {
+        if (bouton.dataset.confirme) { avecAccesFichiers(actionDrive(() => supprimerMurPartage(m))); return; }
+        bouton.dataset.confirme = '1';
+        bouton.textContent = 'Confirmer : supprimer pour tout le monde';
+        return;
+      }
+      supprimerMur(m);
+    },
+  }, participant ? 'Quitter ce mur' : 'Supprimer ce mur');
+  return h('section', { class: 'feuille-section' }, h('div', { class: 'modale-pied' }, bouton));
+}
+
+function supprimerMur(m) {
+  const retirees = etat.taches.filter(t => t.murId === m.id);
+  etat.taches = etat.taches.filter(t => t.murId !== m.id);
+  etat.murs = etat.murs.filter(x => x !== m);
+  const actif = etat.murActif;
+  feuille.close();
+  valider();
+  montrerToast(`Mur « ${m.nom} » supprimé.`, () => {
+    etat.murs.push(m);
+    etat.taches.push(...retirees);
+    etat.murActif = actif;
+    valider();
+  });
+}
+
+/** Retire un mur partagé de cet appareil sans propager la suppression de ses tâches aux autres. */
+function retirerLocalement(m) {
+  for (const t of etat.taches) if (t.murId === m.id) instantane.delete(t.id);
+  etat.taches = etat.taches.filter(t => t.murId !== m.id);
+  delete etat.suppMurs[m.id];
+  etat.murs = etat.murs.filter(x => x !== m);
+}
+
+function quitterMur(m) {
+  retirerLocalement(m);
+  feuille.close();
+  valider();
+  montrerToast(`Tu as quitté le mur « ${m.nom} ». Il reste disponible pour les autres.`);
+}
+
+async function partagerMur(m) {
+  const taches = etat.taches.filter(t => t.murId === m.id);
+  const { id } = await creerFichier(
+    { name: `Post-its - ${m.nom}.json`, mimeType: 'application/json' },
+    docMur(m, taches, {}),
+  );
+  try {
+    await appelJson(`${API_DRIVE}/files/${id}/permissions?sendNotificationEmail=false&fields=id`, { type: 'anyone', role: 'writer' });
+  } catch (e) {
+    appelJson(`${API_DRIVE}/files/${id}`, { trashed: true }, 'PATCH').catch(() => {});
+    throw e;
+  }
+  m.partage = normaliserMur({ ...m, partage: { fichierId: id, proprietaire: true, lien: true } }).partage;
+  valider();
+  ouvrirGestionMur(m);
+}
+
+async function changerLienMur(m, actif) {
+  const id = m.partage.fichierId;
+  if (actif) await appelJson(`${API_DRIVE}/files/${id}/permissions?sendNotificationEmail=false&fields=id`, { type: 'anyone', role: 'writer' });
+  else await appelDrive(`${API_DRIVE}/files/${id}/permissions/anyoneWithLink`, { method: 'DELETE' });
+  m.partage.lien = actif;
+  valider();
+  ouvrirGestionMur(m);
+}
+
+async function inviterMur(m, adresse) {
+  const message = encodeURIComponent(`Ouvre ce mur de post-its partagé : ${lienPartage('mur', m.partage.fichierId)}`);
+  await appelJson(`${API_DRIVE}/files/${m.partage.fichierId}/permissions?sendNotificationEmail=true&emailMessage=${message}&fields=id`, {
+    type: 'user', role: 'writer', emailAddress: adresse,
+  });
+  if (!m.partage.invites.includes(adresse)) m.partage.invites.push(adresse);
+  valider();
+  ouvrirGestionMur(m);
+  montrerToast(`Invitation envoyée à ${adresse}.`);
+}
+
+async function arreterPartageMur(m) {
+  // Dans la corbeille Drive, le fichier n'est plus accessible aux autres ; le mur redevient privé ici.
+  await appelJson(`${API_DRIVE}/files/${m.partage.fichierId}`, { trashed: true }, 'PATCH');
+  m.partage = null;
+  delete etat.suppMurs[m.id];
+  valider();
+  ouvrirGestionMur(m);
+  montrerToast('Partage arrêté : le mur redevient privé.');
+}
+
+async function supprimerMurPartage(m) {
+  await appelJson(`${API_DRIVE}/files/${m.partage.fichierId}`, { trashed: true }, 'PATCH');
+  retirerLocalement(m);
+  feuille.close();
+  valider();
+  montrerToast(`Mur « ${m.nom} » supprimé pour tout le monde.`);
+}
+
+/* ---------- Partage de l'agenda ---------- */
+function ouvrirPartageAgenda() {
+  const pa = etat.partageAgenda[0];
+  if (!GOOGLE_API_KEY) {
+    ouvrirFeuille("Partager l'agenda", h('p', { class: 'feuille-texte' }, 'Le partage n’est pas encore activé sur cette version de l’app.'));
+    return;
+  }
+  const inclus = new Set(pa ? pa.mursInclus : etat.murs.map(m => m.id));
+  const cases = etat.murs.map(m => h('label', { class: 'cocher' },
+    h('input', {
+      type: 'checkbox', checked: inclus.has(m.id),
+      onchange: ev => {
+        if (ev.target.checked) inclus.add(m.id); else inclus.delete(m.id);
+        if (pa) { pa.mursInclus = [...inclus]; valider(); }
+      },
+    }),
+    h('span', {}, m.nom),
+  ));
+  ouvrirFeuille(pa ? 'Agenda partagé' : "Partager l'agenda",
+    h('p', { class: 'feuille-texte' }, 'Les personnes qui ont le lien voient tes RDV et les tâches des murs cochés, avec leur titre et leur date, en lecture seule. Elles peuvent te demander un RDV : tu l’acceptes ou tu le refuses. Les notes et les sous-tâches ne sont jamais partagées.'),
+    h('section', { class: 'feuille-section' }, h('h3', {}, 'Tâches montrées'), cases),
+    pa ? h('section', { class: 'feuille-section' },
+      h('h3', {}, 'Lien'),
+      champLien(lienPartage('agenda', pa.fichierId)),
+      h('div', { class: 'modale-pied' }, h('button', {
+        type: 'button', class: 'lien',
+        onclick: () => avecAccesFichiers(actionDrive(arreterPartageAgenda)),
+      }, 'Arrêter le partage')),
+    ) : h('div', { class: 'modale-pied' }, h('span', { class: 'espace' }), h('button', {
+      type: 'button', class: 'btn-encre',
+      onclick: () => avecAccesFichiers(actionDrive(() => creerPartageAgenda([...inclus]))),
+    }, 'Créer le lien')),
+  );
+}
+
+async function creerPartageAgenda(mursInclus) {
+  const pa = normaliserPartageAgenda({ id: 'agenda-partage', mursInclus, fichierId: 'en-attente' });
+  const { id } = await creerFichier(
+    { name: 'Post-its - Agenda.json', mimeType: 'application/json' },
+    JSON.stringify({ type: 'postits-agenda', version: 1, majLe: new Date().toISOString(), ...copieAgenda(pa) }),
+  );
+  try {
+    // Le rôle « commentateur » : lecture seule garantie par Google, et demandes de RDV possibles.
+    await appelJson(`${API_DRIVE}/files/${id}/permissions?sendNotificationEmail=false&fields=id`, { type: 'anyone', role: 'commenter' });
+  } catch (e) {
+    appelJson(`${API_DRIVE}/files/${id}`, { trashed: true }, 'PATCH').catch(() => {});
+    throw e;
+  }
+  pa.fichierId = id;
+  etat.partageAgenda = [pa];
+  derniereCopieAgenda = null;
+  valider();
+  ouvrirPartageAgenda();
+}
+
+async function arreterPartageAgenda() {
+  await appelJson(`${API_DRIVE}/files/${etat.partageAgenda[0].fichierId}`, { trashed: true }, 'PATCH');
+  etat.partageAgenda = [];
+  demandes.recues = [];
+  derniereCopieAgenda = null;
+  feuille.close();
+  valider();
+  montrerToast('Partage de l’agenda arrêté.');
+}
+
+/* ---------- Demandes de RDV ---------- */
+const decrireDemande = d => `${dateCourte(d.date)} à ${d.heure}, ${texteDuree(d.duree)}`;
+
+async function envoyerDemande(fichierId, d) {
+  avecAccesFichiers(actionDrive(async () => {
+    await appelJson(`${API_DRIVE}/files/${fichierId}/comments?fields=id`, { content: JSON.stringify({ postits: 'demande-rdv', ...d }) });
+    demandes.miennes.set(fichierId, (await lireDemandes(fichierId)).filter(x => x.moi));
+    montrerToast('Demande envoyée.');
+  }));
+}
+
+function ouvrirDemandesRecues() {
+  ouvrirFeuille('Demandes de RDV',
+    demandes.recues.length ? demandes.recues.map(d => h('div', { class: 'demande' },
+      h('b', {}, d.titre),
+      h('p', {}, `${d.de} · ${decrireDemande(d)}`),
+      d.message ? h('p', {}, d.message) : null,
+      h('div', { class: 'modale-pied' },
+        h('button', { type: 'button', class: 'lien', onclick: () => avecAccesFichiers(actionDrive(() => repondreDemande(d, false))) }, 'Refuser'),
+        h('span', { class: 'espace' }),
+        h('button', { type: 'button', class: 'btn-encre', onclick: () => avecAccesFichiers(actionDrive(() => repondreDemande(d, true))) }, 'Accepter'),
+      ),
+    )) : h('p', { class: 'feuille-texte' }, 'Aucune demande en attente.'),
+  );
+}
+
+async function repondreDemande(d, accepte) {
+  const fichier = etat.partageAgenda[0].fichierId;
+  await appelJson(`${API_DRIVE}/files/${fichier}/comments/${encodeURIComponent(d.id)}/replies?fields=id`, { content: accepte ? 'accepte' : 'refuse', action: 'resolve' });
+  demandes.recues = demandes.recues.filter(x => x.id !== d.id);
+  if (accepte) {
+    etat.rdv.push(normaliserRdv({
+      id: nouvelId(), titre: d.titre, date: d.date, heure: d.heure, duree: d.duree,
+      note: [`Demandé par ${d.de}.`, d.message].filter(Boolean).join(' '),
+      createdAt: new Date().toISOString(),
+    }));
+  }
+  valider();
+  ouvrirDemandesRecues();
+  montrerToast(accepte ? 'RDV ajouté à ton agenda.' : 'Demande refusée.');
+}
+
+function ouvrirMesDemandes() {
+  const liste = demandes.miennes.get(cal.source) || [];
+  const statuts = { attente: 'En attente', accepte: 'Acceptée', refuse: 'Refusée' };
+  ouvrirFeuille('Mes demandes',
+    h('p', { class: 'attention' }, 'Les autres personnes qui ont ce lien peuvent voir tes demandes dans Google Drive.'),
+    liste.length ? liste.map(d => h('div', { class: 'demande' },
+      h('b', {}, d.titre),
+      h('p', {}, decrireDemande(d)),
+      h('p', {}, h('strong', {}, statuts[d.statut])),
+    )) : h('p', { class: 'feuille-texte' }, 'Tu n’as encore envoyé aucune demande.'),
+  );
+}
+
+function retirerAgendaRecu(id) {
+  etat.agendasRecus = etat.agendasRecus.filter(a => a.id !== id);
+  contenusAgenda.delete(id);
+  demandes.miennes.delete(id);
+  cal.source = null;
+  valider();
+  montrerToast('Agenda retiré de ta liste.');
+}
+
+/* ---------- Ouverture d'un lien de partage ---------- */
+function lireLien() {
+  const m = /^#(mur|agenda)=([\w-]{10,200})$/.exec(location.hash);
+  return m ? { genre: m[1], id: m[2] } : null;
+}
+const effacerLien = () => history.replaceState(null, '', location.pathname + location.search);
+
+function traiterLien() {
+  const lien = lireLien();
+  if (!lien) return;
+  const dejaMur = lien.genre === 'mur' ? etat.murs.find(m => m.partage?.fichierId === lien.id && !m.partage.perdu) : null;
+  const dejaAgenda = lien.genre === 'agenda' ? etat.agendasRecus.find(a => a.id === lien.id) : null;
+  const moiAgenda = lien.genre === 'agenda' && etat.partageAgenda[0]?.fichierId === lien.id;
+  if (dejaMur) { etat.murActif = dejaMur.id; etat.vue = 'tout'; effacerLien(); valider(); return; }
+  if (moiAgenda) { cal.source = null; etat.vue = 'calendrier'; effacerLien(); valider(); return; }
+  if (dejaAgenda) { cal.source = dejaAgenda.id; etat.vue = 'calendrier'; effacerLien(); valider(); return; }
+  const estMur = lien.genre === 'mur';
+  ouvrirFeuille(estMur ? 'Un mur partagé' : 'Un agenda partagé',
+    h('p', { class: 'feuille-texte' }, estMur
+      ? 'Quelqu’un t’a partagé un mur de post-its. Tu pourras le voir et le modifier.'
+      : 'Quelqu’un t’a partagé son agenda, en lecture seule. Tu pourras lui demander un RDV.'),
+    h('p', { class: 'feuille-texte' }, 'Connecte-toi avec Google, puis sélectionne le fichier dans la fenêtre qui s’ouvre : l’app n’aura accès qu’à ce fichier.'),
+    !GOOGLE_API_KEY ? h('p', { class: 'attention' }, 'Le partage n’est pas encore activé sur cette version de l’app.') : null,
+    h('div', { class: 'modale-pied' },
+      h('button', { type: 'button', class: 'lien', onclick: () => { effacerLien(); feuille.close(); } }, 'Ignorer'),
+      h('span', { class: 'espace' }),
+      GOOGLE_API_KEY ? h('button', {
+        type: 'button', class: 'btn-encre',
+        onclick: () => {
+          feuille.close(); // le sélecteur Google s'afficherait sous une fenêtre ouverte
+          avecAccesFichiers(actionDrive(() => rejoindre(lien)));
+        },
+      }, 'Ouvrir avec Google') : null,
+    ),
+  );
+}
+
+async function rejoindre({ genre, id }) {
+  const accorde = await choisirFichier(id);
+  if (!accorde) { montrerToast('Fichier non sélectionné : le partage n’a pas été ouvert.'); traiterLien(); return; }
+  const meta = await (await appelDrive(`${API_DRIVE}/files/${id}?fields=ownedByMe,owners(displayName),capabilities(canEdit)`)).json();
+  const d = await (await appelDrive(`${API_DRIVE}/files/${id}?alt=media`)).json();
+  if (d.type !== (genre === 'mur' ? 'postits-mur' : 'postits-agenda')) { montrerToast('Ce fichier n’est pas un partage Post-its.'); effacerLien(); return; }
+  effacerLien();
+  if (genre === 'mur') {
+    if (!meta.capabilities?.canEdit) montrerToast('Ce lien ne te donne pas le droit de modifier ce mur.');
+    const idMur = typeof d.mur?.id === 'string' && d.mur.id ? d.mur.id : nouvelId();
+    let m = murDe(idMur);
+    if (!m) {
+      m = normaliserMur({ id: idMur, nom: d.mur?.nom, createdAt: new Date().toISOString() });
+      etat.murs.push(m);
+    }
+    m.partage = normaliserMur({ ...m, partage: { fichierId: id, proprietaire: Boolean(meta.ownedByMe), lien: m.partage?.lien } }).partage;
+    etat.murActif = m.id;
+    etat.vue = 'tout';
+    valider();
+    await synchroMur(m);
+    montrerToast(`Mur « ${m.nom} » ajouté.`);
+    return;
+  }
+  etat.agendasRecus = [...etat.agendasRecus.filter(a => a.id !== id), normaliserRecu({ id, nom: meta.owners?.[0]?.displayName })];
+  await lireAgendaRecu(etat.agendasRecus.at(-1));
+  cal.source = id;
+  etat.vue = 'calendrier';
+  valider();
 }
 
 async function synchroniser() {
@@ -1476,17 +2988,26 @@ async function synchroniser() {
   try {
     const { distant, idFichier } = await lireDistant();
     // Fusion faite à partir de l'état actuel : ce qui a changé pendant la lecture est inclus.
-    const local = { taches: etat.taches, suppressions: etat.suppressions };
+    const local = docLocal();
     const fusion = fusionner(local, distant);
-    const canon = formeCanonique(fusion);
-    if (canon !== formeCanonique(local)) {
-      etat.taches = fusion.taches;
-      etat.suppressions = fusion.suppressions;
+    if (formeCanonique(fusion) !== formeCanonique(local)) {
+      Object.assign(etat, fusion);
       prendreInstantane();
       sauver();
       rendre();
     }
-    if (!idFichier || canon !== formeCanonique(distant)) await ecrireDistant(idFichier, fusion);
+    const prive = docPrive(fusion);
+    if (!idFichier || formeCanonique(prive) !== formeCanonique(distant)) await ecrireDistant(idFichier, prive);
+    const aDesPartages = etat.murs.some(m => m.partage) || etat.partageAgenda.length || etat.agendasRecus.length;
+    if (aDesPartages && !aPorteeFichiers()) {
+      // Jeton obtenu avant l'arrivée du partage : Google demande un geste de l'utilisateur pour l'élargir.
+      poserStatut('expire');
+      return;
+    }
+    if (aDesPartages) {
+      await synchroMursPartages();
+      await synchroAgendas();
+    }
     drive.derniere = new Date();
     poserStatut('ok');
   } catch (e) {
@@ -1509,7 +3030,7 @@ function demarrerDrive() {
   lireCompte();
   try {
     const j = JSON.parse(sessionStorage.getItem(CLE_JETON) || 'null');
-    if (j) { drive.jeton = j.jeton; drive.expire = j.expire; }
+    if (j) { drive.jeton = j.jeton; drive.expire = j.expire; drive.portees = j.portees || ''; }
   } catch {}
   preparerGoogle();
   if (!drive.connecte) { rendreCompte(); return; }
@@ -1521,8 +3042,12 @@ function demarrerDrive() {
 charger();
 prendreInstantane();
 initialiserModale();
+initialiserRdv();
 rendre();
 demarrerDrive();
+traiterLien();
+window.addEventListener('hashchange', traiterLien);
+etroit.addEventListener('change', rendre); // semaine sur grand écran, liste du jour sur téléphone
 
 // Autre onglet ouvert sur la même app : on reprend ses changements.
 window.addEventListener('storage', e => {
