@@ -2049,8 +2049,17 @@ function montrerToast(message, annuler) {
   toast.replaceChildren(h('span', {}, message));
   if (annuler) toast.append(h('button', { type: 'button', onclick: () => { toast.hidden = true; annuler(); } }, 'Annuler'));
   toast.hidden = false;
+  placerToast();
   minuteurToast = setTimeout(() => { toast.hidden = true; }, 7000);
 }
+
+/* Une fenêtre ouverte passe au-dessus de tout le reste de la page : le message doit vivre à l'intérieur pour rester visible. */
+function placerToast() {
+  const parent = document.querySelector('dialog[open]') || document.body;
+  if (toast.parentElement !== parent) parent.append(toast);
+}
+const observateurFenetres = new MutationObserver(placerToast);
+document.querySelectorAll('dialog').forEach(d => observateurFenetres.observe(d, { attributes: true, attributeFilter: ['open'] }));
 
 /* ============ Modale de création / édition ============ */
 const $ = id => document.getElementById(id);
