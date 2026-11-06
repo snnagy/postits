@@ -580,7 +580,7 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
-  .vider {
+  .bouton-archives {
     margin-left: 4px;
     padding: 4px 11px;
     border: 1.5px dashed var(--creme);
@@ -589,7 +589,7 @@
     letter-spacing: .05em;
     text-transform: uppercase;
   }
-  .vider:hover { background: rgb(255 246 220 / .16); }
+  .bouton-archives:hover { background: rgb(255 246 220 / .16); }
 
   /* ---------- Calendrier ---------- */
   .cal { --hh: 44px; color: var(--encre); background: var(--creme); box-shadow: 8px 10px 0 var(--mur-fonce); }
@@ -701,6 +701,10 @@
   }
   .feuille-texte { margin: 12px 0 0; font-size: 15px; line-height: 1.4; }
   .feuille-section { margin-top: 22px; padding-top: 14px; border-top: 2px solid var(--encre); }
+  .feuille-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .feuille-actions .btn-encre { width: 100%; }
+  .btn-encre:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-encre:disabled:hover { background: var(--encre); color: var(--c); }
   .feuille-section h3 { margin: 0; font: 400 26px/1.1 var(--f-affiche); letter-spacing: .03em; text-transform: uppercase; }
   .ligne-lien { display: flex; gap: 8px; align-items: flex-end; margin-top: 8px; }
   .ligne-lien input { min-width: 0; flex: 1; }
@@ -761,8 +765,8 @@
     }
     .cats .select-mobile { background: var(--creme); }
     .select-mobile option { color: var(--encre); background: #fff; }
-    .mur-action, .vider { min-height: 44px; }
-    .vider { flex: none; margin-left: 0; letter-spacing: 0; text-transform: none; }
+    .mur-action, .bouton-archives { min-height: 44px; }
+    .bouton-archives { flex: none; margin-left: 0; letter-spacing: 0; text-transform: none; }
     .vues { flex-basis: 100%; flex-wrap: wrap; gap: 2px 14px; }
     .vue { min-height: 44px; font-size: clamp(21px, 6.6vw, 28px); }
     .vue .nb { margin-left: 3px; font-size: .75em; }
@@ -794,8 +798,6 @@
     .cal-liste li { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; }
     .cal-liste .quand { padding-top: 11px; font: 700 14px/1.2 var(--f-texte); overflow-wrap: anywhere; }
     .cal-legende { padding-bottom: 12px; }
-    .feuille-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-    .feuille-actions .btn-encre { width: 100%; }
 
     .modale-tete h2 { min-width: 0; font-size: clamp(26px, 8vw, 40px); overflow-wrap: anywhere; }
     .duo > *, .ligne-lien > * { min-width: 0; }
@@ -1115,6 +1117,7 @@ function normaliser(t) {
     createdAt: dateCreation(t.createdAt),
     updatedAt: Number(t.updatedAt) || Date.parse(t.createdAt) || 0,
     done: Boolean(t.done),
+    archiveeLe: Number(t.archiveeLe) || null,
     occurrencesFaites: Array.isArray(t.occurrencesFaites) ? t.occurrencesFaites.filter(dateValide) : [],
   };
 }
@@ -1241,7 +1244,7 @@ const nouvelId = () => Date.now().toString(36) + Math.random().toString(36).slic
 const murDe = id => etat.murs.find(m => m.id === id);
 const murActif = () => murDe(etat.murActif);
 // Les vues Tout et Aujourd'hui ne montrent que le mur choisi.
-const parents = () => etat.taches.filter(t => !t.parentId && t.murId === etat.murActif);
+const parents = () => etat.taches.filter(t => !t.parentId && !t.archiveeLe && t.murId === etat.murActif);
 const sousTaches = id => etat.taches.filter(t => t.parentId === id);
 const tache = id => etat.taches.find(t => t.id === id);
 
@@ -1299,20 +1302,81 @@ function creerSousTache(parentId, titre, couleur, murId) {
   return normaliser({ id: nouvelId(), titre, couleur, parentId, murId, createdAt: new Date().toISOString() });
 }
 
-/* Les répétitives restent : leur règle continue, seule l'occurrence du jour est cochée. */
-const terminees = () => etat.taches.filter(t => t.murId === etat.murActif && t.done);
+/* ============ Archives ============
+   Une tâche archivée reste enregistrée mais quitte le mur et l'agenda. Les répétitives ne sont jamais archivées :
+   leur règle continue, seule l'occurrence du jour est cochée. Les sous-tâches suivent leur tâche. */
+const terminees = () => parents().filter(t => t.done);
+const archivees = () => etat.taches
+  .filter(t => !t.parentId && t.murId === etat.murActif && t.archiveeLe)
+  .sort((a, b) => b.archiveeLe - a.archiveeLe);
+const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
 
-function viderTerminees() {
-  const faites = new Set(terminees().map(t => t.id));
-  const retirees = etat.taches.filter(t => faites.has(t.id) || faites.has(t.parentId));
-  if (!retirees.length) return;
-  etat.taches = etat.taches.filter(t => !retirees.includes(t));
+function archiverTerminees() {
+  const faites = terminees();
+  if (!faites.length) return;
+  const maintenant = Date.now();
+  for (const t of faites) t.archiveeLe = maintenant;
+  feuille.close();
   valider();
   const partage = murActif()?.partage ? ' pour tout le monde' : '';
-  montrerToast(`${retirees.length} tâche${retirees.length > 1 ? 's' : ''} terminée${retirees.length > 1 ? 's' : ''} supprimée${retirees.length > 1 ? 's' : ''}${partage}.`, () => {
-    etat.taches.push(...retirees);
+  montrerToast(`${pluriel(faites.length, 'tâche')} ${faites.length > 1 ? 'archivées' : 'archivée'}${partage}.`, () => {
+    for (const t of faites) { const x = tache(t.id); if (x) x.archiveeLe = null; }
     valider();
   });
+}
+
+function ouvrirMenuArchives() {
+  const nbFaites = terminees().length;
+  const nbArchives = archivees().length;
+  ouvrirFeuille('Archives',
+    h('div', { class: 'feuille-actions' },
+      h('button', { type: 'button', class: 'btn-encre', disabled: !nbFaites, onclick: archiverTerminees },
+        nbFaites ? `Archiver ${nbFaites > 1 ? `les ${nbFaites} tâches terminées` : 'la tâche terminée'}` : 'Aucune tâche terminée à archiver'),
+      h('button', { type: 'button', class: 'btn-encre', disabled: !nbArchives, onclick: ouvrirListeArchives },
+        nbArchives ? `Voir les archives (${nbArchives})` : 'Aucune tâche archivée'),
+    ),
+  );
+}
+
+function ouvrirListeArchives() {
+  const liste = archivees();
+  const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  ouvrirFeuille(`Archives de « ${murActif().nom} »`,
+    liste.length ? liste.map(t => {
+      const sous = sousTaches(t.id).length;
+      const effacer = h('button', {
+        type: 'button', class: 'lien',
+        onclick: () => {
+          if (!effacer.dataset.confirme) {
+            effacer.dataset.confirme = '1';
+            effacer.textContent = 'Confirmer la suppression';
+            return;
+          }
+          etat.taches = etat.taches.filter(x => x.id !== t.id && x.parentId !== t.id);
+          valider();
+          ouvrirListeArchives();
+        },
+      }, 'Supprimer');
+      return h('div', { class: 'demande' },
+        h('b', {}, t.titre),
+        h('p', {}, `Archivée le ${fmt.format(new Date(t.archiveeLe))}${sous ? ` · ${pluriel(sous, 'sous-tâche')}` : ''}`),
+        h('div', { class: 'modale-pied' },
+          effacer,
+          h('span', { class: 'espace' }),
+          h('button', {
+            type: 'button', class: 'btn-encre',
+            onclick: () => {
+              const x = tache(t.id);
+              if (x) x.archiveeLe = null;
+              valider();
+              ouvrirListeArchives();
+            },
+          }, 'Remettre sur le mur'),
+        ),
+      );
+    }) : h('p', { class: 'feuille-texte' }, 'Plus aucune tâche archivée sur ce mur.'),
+    h('div', { class: 'modale-pied' }, h('button', { type: 'button', class: 'lien', onclick: ouvrirMenuArchives }, '← Retour')),
+  );
 }
 
 function supprimer(t) {
@@ -1554,6 +1618,7 @@ function rendre() {
     onclick: () => { etat.categorie = valeur; valider(); },
   }, texte);
   const nbFaites = terminees().length;
+  const nbArchives = archivees().length;
   const TOUTES = '__toutes';
   const filtreCats = !cats.length ? [] : etroit.matches ? [h('select', {
     class: 'select-mobile', 'aria-label': 'Catégorie', dataset: { cle: 'cat-choix' },
@@ -1565,10 +1630,10 @@ function rendre() {
   )] : [puce('Toutes', null), ...cats.map(c => puce(c, c)), aSansCat ? puce('Sans catégorie', '') : null];
   document.getElementById('cats').replaceChildren(...(enAgenda ? [] : [
     ...filtreCats,
-    nbFaites ? h('button', {
-      type: 'button', class: 'vider', dataset: { cle: 'vider' }, onclick: viderTerminees,
-      title: 'Supprime toutes les tâches cochées de ce mur',
-    }, `Vider les terminées (${nbFaites})`) : null,
+    nbFaites || nbArchives ? h('button', {
+      type: 'button', class: 'bouton-archives', dataset: { cle: 'archives' }, onclick: ouvrirMenuArchives,
+      title: 'Archiver les tâches terminées de ce mur ou voir ses archives',
+    }, nbFaites ? `Archiver les tâches (${nbFaites})` : `Archives (${nbArchives})`) : null,
   ].filter(Boolean)));
 
   const lectureSeule = enAgenda && Boolean(cal.source);
@@ -1645,7 +1710,7 @@ function entreesDuJour(jour, src) {
     genre: 'rdv', r, jour, debut: enMinutes(r.heure), duree: r.duree, fait: false,
   }));
   for (const t of src.taches) {
-    if (t.parentId) continue;
+    if (t.parentId || t.archiveeLe) continue;
     let occ = null;
     if (t.recurrence) {
       const debut = ajouterJours(jour, -(t.recurrence.delai - 1));
@@ -2568,7 +2633,7 @@ function copieAgenda(pa) {
   return {
     rdv: etat.rdv.map(({ note, updatedAt, createdAt, ...r }) => r),
     // Ni notes ni sous-tâches : seulement ce que l'agenda affiche.
-    taches: etat.taches.filter(t => !t.parentId && inclus.has(t.murId)).map(t => ({
+    taches: etat.taches.filter(t => !t.parentId && !t.archiveeLe && inclus.has(t.murId)).map(t => ({
       id: t.id, titre: t.titre, couleur: t.couleur, dateLimite: t.dateLimite, heure: t.heure, murId: t.murId,
       recurrence: t.recurrence, createdAt: t.createdAt, done: t.done, occurrencesFaites: t.occurrencesFaites,
     })),
