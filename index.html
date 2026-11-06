@@ -23,7 +23,8 @@
     --p-lilas: #cfaeff;
     --p-papier: #f7f1df;
 
-    --f-affiche: Haettenschweiler, Impact, "Arial Narrow Bold", "Franklin Gothic Heavy", sans-serif;
+    /* Les téléphones n'ont pas toutes ces polices : la mise en page doit tenir avec n'importe laquelle */
+    --f-affiche: Haettenschweiler, Impact, "Arial Narrow Bold", "Franklin Gothic Heavy", "Roboto Condensed", "sans-serif-condensed", sans-serif;
     --f-main: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Marker Felt", cursive;
     --f-texte: Bahnschrift, "DIN Alternate", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   }
@@ -356,10 +357,9 @@
   .vide { padding: clamp(24px, 8vh, 80px) 0; max-width: 780px; }
   .vide h2 {
     margin: 0;
-    font: 400 clamp(62px, 11vw, 130px)/.9 var(--f-affiche);
+    font: 400 clamp(62px, 11vw, 130px)/.95 var(--f-affiche);
     text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 2px var(--creme);
+    color: var(--creme); /* pas de contour : il se dessine mal avec les polices des téléphones */
   }
   .vide p { margin: 16px 0 0; font: 700 21px/1.35 var(--f-main); }
 
@@ -732,24 +732,76 @@
 
   /* ---------- Mobile ---------- */
   @media (max-width: 720px) {
-    .tete h1 { font-size: clamp(64px, 22vw, 110px); }
-    .jour { text-align: left; font-size: 13px; }
-    .filtres { gap: 8px 14px; padding-block: 8px; }
-    .vues { gap: 16px; flex-basis: 100%; }
-    .vue { min-height: 44px; font-size: 28px; }
-    .cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex-basis: 100%; padding-block: 2px; }
-    .cat, .vider { flex: none; min-height: 40px; }
-    .compte { margin-left: 0; }
-    .compte button { min-height: 40px; }
-    .grille { grid-template-columns: minmax(0, 1fr); }
-    .postit, .postit:hover, .postit:focus-within { min-height: 200px; transform: none; }
+    body { overflow-x: clip; }
+    h1, h2, h3, .vue, .cal-titre, .etiquette, .echeance, .compte span { overflow-wrap: anywhere; }
+
+    /* En-tête compact : la liste doit arriver vite à l'écran */
+    .tete { align-items: baseline; gap: 2px 14px; padding-top: 14px; }
+    .tete h1 { font-size: clamp(42px, 14vw, 72px); }
+    .jour { padding-bottom: 0; text-align: left; font-size: 12px; }
+    .jour b { display: inline; margin-left: 5px; font-size: 21px; }
+
+    /* Barre de filtres : un sélecteur plutôt que des rangées de boutons */
+    .filtres { position: static; gap: 8px; margin-top: 10px; padding-block: 8px; }
+    .filtres > * { min-width: 0; max-width: 100%; }
+    .murs, .cats { width: 100%; flex-basis: 100%; overflow: visible; padding-block: 0; }
+    .cats:empty { display: none; }
+    .select-mobile {
+      /* largeur de départ nulle : sinon un nom de mur long élargit toute la page */
+      flex: 1 1 0;
+      width: 0;
+      min-width: 0;
+      min-height: 44px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 0;
+      background: var(--p-jaune);
+      color: var(--encre);
+      font-weight: 700;
+    }
+    .cats .select-mobile { background: var(--creme); }
+    .select-mobile option { color: var(--encre); background: #fff; }
+    .mur-action, .vider { min-height: 44px; }
+    .vider { flex: none; margin-left: 0; letter-spacing: 0; text-transform: none; }
+    .vues { flex-basis: 100%; flex-wrap: wrap; gap: 2px 14px; }
+    .vue { min-height: 44px; font-size: clamp(21px, 6.6vw, 28px); }
+    .vue .nb { margin-left: 3px; font-size: .75em; }
+    .compte { margin-left: 0; flex-basis: 100%; font-size: 13px; }
+    .compte button { min-height: 36px; }
+
+    /* Post-it épuré : on touche la carte pour modifier couleur, sous-tâches et suppression */
+    main { padding-top: 18px; padding-bottom: 28px; }
+    .grille { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .postit, .postit:hover, .postit:focus-within { min-height: 0; transform: none; }
+    .postit { cursor: pointer; padding-bottom: 14px; }
     .postit.pose { animation: none; }
-    .mur-onglet, .mur-action { min-height: 40px; }
+    .outils, .ajout-sous, .sous .retirer { display: none; }
+    .titre { font-size: 19px; }
+    .tampon { top: 10px; right: 8px; font-size: 32px; border-width: 3px; }
+    .vide { padding-block: 16px; }
+    .vide h2 { font-size: clamp(34px, 10.5vw, 72px); line-height: 1; overflow-wrap: break-word; }
+    .vide p { font-size: 18px; }
+
+    .bas { padding-bottom: 104px; }
+    .bas p:first-child { display: none; }
+
     .ajouter { width: 70px; height: 70px; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }
     .cal { box-shadow: 4px 5px 0 var(--mur-fonce); }
     .cal-barre { padding: 10px; }
-    .cal-titre { flex-basis: 100%; margin: 0; font-size: 28px; }
+    .cal-titre { flex-basis: 100%; margin: 0; font-size: clamp(22px, 7vw, 28px); }
+    .cal-groupe { flex-wrap: wrap; }
     .cal-btn, .cal-select { min-height: 44px; }
+    .cal-liste li { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; }
+    .cal-liste .quand { padding-top: 11px; font: 700 14px/1.2 var(--f-texte); overflow-wrap: anywhere; }
+    .cal-legende { padding-bottom: 12px; }
+    .feuille-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .feuille-actions .btn-encre { width: 100%; }
+
+    .modale-tete h2 { min-width: 0; font-size: clamp(26px, 8vw, 40px); overflow-wrap: anywhere; }
+    .duo > *, .ligne-lien > * { min-width: 0; }
+    dialog input { max-width: 100%; min-width: 0; }
+    dialog { overflow-x: hidden; }
+    .toast { width: max-content; bottom: 96px; }
     /* 16 px : sous cette taille, iOS zoome sur le champ à chaque saisie */
     input, textarea, select { font-size: 16px; }
     .ajout-sous { min-height: 40px; font-size: 16px; }
@@ -1363,6 +1415,8 @@ function rendrePostit(el) {
   return h('article', {
     class: 'postit' + (fini ? ' fait' : '') + (t.id === nouveauId ? ' pose' : ''),
     style: `--c:var(--p-${t.couleur});--r:${rotation(t.id)}deg`,
+    // Sur téléphone, la carte entière ouvre la fiche : c'est là que sont la couleur, les sous-tâches et la suppression.
+    onclick: ev => { if (etroit.matches && !ev.target.closest('input, button, label, a')) ouvrirModale(t); },
   },
     t.categorie ? h('div', { class: 'etiquette' }, t.categorie) : null,
     h('div', { class: 'ligne' },
@@ -1476,7 +1530,14 @@ function rendre() {
   const enAgenda = etat.vue === 'calendrier';
   const zoneMurs = document.getElementById('murs');
   zoneMurs.hidden = enAgenda; // l'agenda rassemble tous les murs
-  zoneMurs.replaceChildren(
+  if (etroit.matches) zoneMurs.replaceChildren(
+    h('select', {
+      class: 'select-mobile', 'aria-label': 'Mur affiché', dataset: { cle: 'mur-choix' },
+      onchange: ev => { etat.murActif = ev.target.value; etat.categorie = null; valider(); },
+    }, etat.murs.map(m => h('option', { value: m.id, selected: m.id === etat.murActif }, m.partage ? `${m.nom} (partagé)` : m.nom))),
+    h('button', { type: 'button', class: 'mur-action', dataset: { cle: 'mur-gerer' }, onclick: () => ouvrirGestionMur(murActif()) }, 'Gérer'),
+  );
+  else zoneMurs.replaceChildren(
     ...etat.murs.map(m => h('button', {
       type: 'button', class: 'mur-onglet', 'aria-pressed': String(m.id === etat.murActif),
       title: m.partage ? `${m.nom} (partagé)` : m.nom,
@@ -1493,8 +1554,17 @@ function rendre() {
     onclick: () => { etat.categorie = valeur; valider(); },
   }, texte);
   const nbFaites = terminees().length;
+  const TOUTES = '__toutes';
+  const filtreCats = !cats.length ? [] : etroit.matches ? [h('select', {
+    class: 'select-mobile', 'aria-label': 'Catégorie', dataset: { cle: 'cat-choix' },
+    onchange: ev => { etat.categorie = ev.target.value === TOUTES ? null : ev.target.value; valider(); },
+  },
+    h('option', { value: TOUTES, selected: etat.categorie === null }, 'Toutes'),
+    cats.map(c => h('option', { value: c, selected: etat.categorie === c }, c)),
+    aSansCat ? h('option', { value: '', selected: etat.categorie === '' }, 'Sans catégorie') : null,
+  )] : [puce('Toutes', null), ...cats.map(c => puce(c, c)), aSansCat ? puce('Sans catégorie', '') : null];
   document.getElementById('cats').replaceChildren(...(enAgenda ? [] : [
-    ...(cats.length ? [puce('Toutes', null), ...cats.map(c => puce(c, c)), aSansCat ? puce('Sans catégorie', '') : null] : []),
+    ...filtreCats,
     nbFaites ? h('button', {
       type: 'button', class: 'vider', dataset: { cle: 'vider' }, onclick: viderTerminees,
       title: 'Supprime toutes les tâches cochées de ce mur',
@@ -1677,23 +1747,48 @@ function rendreBarreCal(jours, modeEffectif, src) {
       btn("Aujourd'hui", () => allerA(aujourdhui())),
       btn('›', () => allerA(ajouterJours(cal.jour, pas)), { 'aria-label': 'Période suivante' }),
     ),
-    etroit.matches ? null : h('div', { class: 'cal-groupe' },
+    etroit.matches ? [
+      nombreDemandes() && !src.lecture ? btn(`Demandes (${nombreDemandes()})`, ouvrirDemandesRecues, { class: 'cal-btn fort' }) : null,
+      btn('Options', ouvrirOptionsAgenda),
+    ] : h('div', { class: 'cal-groupe' },
       btn('Semaine', () => { cal.mode = 'semaine'; rendre(); }, { 'aria-pressed': String(cal.mode === 'semaine') }),
       btn('Jour', () => { cal.mode = 'jour'; rendre(); }, { 'aria-pressed': String(cal.mode === 'jour') }),
     ),
-    etat.agendasRecus.length ? h('select', {
+    etroit.matches ? null : etat.agendasRecus.length ? h('select', {
       class: 'cal-select', 'aria-label': 'Agenda affiché',
       onchange: ev => { cal.source = ev.target.value || null; rendre(); },
     },
       h('option', { value: '', selected: !cal.source }, 'Mon agenda'),
       etat.agendasRecus.map(a => h('option', { value: a.id, selected: cal.source === a.id }, `Agenda de ${a.nom}`)),
     ) : null,
-    src.lecture
+    etroit.matches ? null : src.lecture
       ? [btn('Mes demandes', ouvrirMesDemandes), btn('Retirer cet agenda', () => retirerAgendaRecu(cal.source))]
       : [
         nombreDemandes() ? btn(`Demandes (${nombreDemandes()})`, ouvrirDemandesRecues, { class: 'cal-btn fort' }) : null,
         btn(etat.partageAgenda.length ? 'Agenda partagé' : "Partager l'agenda", ouvrirPartageAgenda),
       ],
+  );
+}
+
+/** Sur téléphone, les actions secondaires de l'agenda sont regroupées ici. */
+function ouvrirOptionsAgenda() {
+  const action = (texte, fn) => h('button', { type: 'button', class: 'btn-encre', onclick: fn }, texte);
+  ouvrirFeuille('Agenda',
+    etat.agendasRecus.length ? h('label', { class: 'champ' },
+      h('span', { class: 'nom' }, 'Agenda affiché'),
+      h('select', {
+        onchange: ev => { cal.source = ev.target.value || null; feuille.close(); rendre(); },
+      },
+        h('option', { value: '', selected: !cal.source }, 'Mon agenda'),
+        etat.agendasRecus.map(a => h('option', { value: a.id, selected: cal.source === a.id }, `Agenda de ${a.nom}`)),
+      ),
+    ) : null,
+    h('div', { class: 'feuille-actions' }, cal.source
+      ? [
+        action('Mes demandes', ouvrirMesDemandes),
+        action('Retirer cet agenda', () => { feuille.close(); retirerAgendaRecu(cal.source); }),
+      ]
+      : action(etat.partageAgenda.length ? 'Agenda partagé' : "Partager l'agenda", ouvrirPartageAgenda)),
   );
 }
 
@@ -2234,7 +2329,13 @@ function poserStatut(statut, message = '') {
 function rendreCompte() {
   const zone = document.getElementById('compte');
   const bouton = (texte, action, classe = '') => h('button', { type: 'button', class: classe, onclick: action }, texte);
-  const qui = drive.email ? `${drive.email} · ` : '';
+  // Sur téléphone, pas d'adresse e-mail à l'écran : elle prend deux lignes et se trouve dans la fiche du compte.
+  const qui = etroit.matches ? 'Drive · ' : drive.email ? `${drive.email} · ` : '';
+  if (etroit.matches && drive.statut === 'ok') {
+    const heure = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(drive.derniere);
+    zone.replaceChildren(bouton(`${qui}à jour (${heure})`, ouvrirCompte, 'discret'));
+    return;
+  }
   switch (drive.statut) {
     case 'deconnecte':
       zone.replaceChildren(bouton('Connecter Google Drive', connecterDrive));
@@ -2254,6 +2355,16 @@ function rendreCompte() {
       zone.replaceChildren(h('span', {}, drive.message), bouton('Réessayer', synchroniser, 'discret'));
       break;
   }
+}
+
+function ouvrirCompte() {
+  ouvrirFeuille('Compte Google',
+    h('p', { class: 'feuille-texte' }, drive.email || 'Compte connecté'),
+    h('div', { class: 'feuille-actions' }, h('button', {
+      type: 'button', class: 'btn-encre',
+      onclick: () => { feuille.close(); deconnecterDrive(); },
+    }, 'Déconnecter')),
+  );
 }
 
 function preparerGoogle() {
@@ -2621,7 +2732,10 @@ function ouvrirGestionMur(m = null) {
     h('div', { class: 'modale-pied' }, h('span', { class: 'espace' }), h('button', { type: 'submit', class: 'btn-encre' }, m ? 'Renommer' : 'Créer le mur')),
   );
   if (!m) { ouvrirFeuille('Nouveau mur', formNom); nom.focus(); return; }
-  ouvrirFeuille(`Mur « ${m.nom} »`, formNom, sectionPartageMur(m), sectionSuppressionMur(m));
+  ouvrirFeuille(`Mur « ${m.nom} »`, formNom, sectionPartageMur(m), sectionSuppressionMur(m),
+    etroit.matches ? h('div', { class: 'feuille-actions' }, h('button', {
+      type: 'button', class: 'btn-encre', onclick: () => ouvrirGestionMur(),
+    }, 'Créer un autre mur')) : null);
 }
 
 const renommerFichierMur = m => appelJson(`${API_DRIVE}/files/${m.partage.fichierId}`, { name: `Post-its - ${m.nom}.json` }, 'PATCH').catch(() => {});
@@ -3047,7 +3161,8 @@ rendre();
 demarrerDrive();
 traiterLien();
 window.addEventListener('hashchange', traiterLien);
-etroit.addEventListener('change', rendre); // semaine sur grand écran, liste du jour sur téléphone
+// L'interface change entre grand écran et téléphone : semaine ou liste du jour, boutons ou sélecteurs.
+etroit.addEventListener('change', () => { rendre(); rendreCompte(); });
 
 // Autre onglet ouvert sur la même app : on reprend ses changements.
 window.addEventListener('storage', e => {
